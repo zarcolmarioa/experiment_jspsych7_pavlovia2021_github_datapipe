@@ -310,7 +310,7 @@ const CONFIG = {
       "noise.comparison_levels":     ["10", "15", "20"],
       "noise.standard_level":        "15",
       "stimuli.repetitions":         1,
-      "stimuli.single_exposure":     true,
+      "stimuli.single_exposure":     false,
     },
     emotional_salience_control: {
       "response.type":               "text",
@@ -399,7 +399,7 @@ const CONFIG = {
   // Set enabled: false to skip entirely (default for the main experiment).
   // ---------------------------------------------------------------------------
   stimulus_evaluation: {
-    enabled: true,   // Set to true only for the stimulus evaluation study
+    enabled: false,   // Set to true only for the stimulus evaluation study
 
     // Maximum number of images to show. Set to null to show all images.
     // Set to a small number (e.g. 3) for quick testing.
@@ -438,7 +438,7 @@ const CONFIG = {
   questionnaires: {
     enabled: false,    // Master switch: false = skip all questionnaires
     names: [
-      { id: "cds", enabled: true },    // Cambridge Depersonalization Scale
+      { id: "cds", enabled: false },    // Cambridge Depersonalization Scale
       // Add more here, e.g.:
       // { id: "phq9", enabled: true },
     ],
