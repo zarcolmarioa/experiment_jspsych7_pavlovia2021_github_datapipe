@@ -1,0 +1,16 @@
+# Local testing dependencies (Pavlovia provides lib/ automatically)
+lib/
+
+# Data files (Pavlovia saves data on its server)
+data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

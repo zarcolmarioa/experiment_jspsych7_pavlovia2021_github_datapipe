@@ -1,0 +1,313 @@
+/* =============================================================================
+   experiment.css — Styling for the NE Task
+   
+   Design principle: neutral, distraction-free interface appropriate for a
+   psychophysics experiment. Mid-grey background, centred content, legible text.
+   Avoid anything that might draw attention away from stimuli.
+============================================================================= */
+
+/* --- Base reset & body ---------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background-color: #808080;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #1a1a1a;
+}
+
+/* --- jsPsych display container -------------------------------------------
+   jsPsych v7 injects a <div> directly into the body and gives it the class
+   "jspsych-display-element". We make it fill the viewport and use flexbox
+   so every trial's content is centred both horizontally and vertically.
+   The !important flags are needed to override jsPsych's own inline styles.
+-------------------------------------------------------------------------- */
+.jspsych-display-element {
+  background-color: #808080 !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 40px 20px !important;
+}
+
+/* jsPsych wraps all stimulus HTML in .jspsych-content — ensure it can
+   stretch to full width so our inner max-width constraints work correctly */
+.jspsych-content {
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* --- Instruction screens -------------------------------------------------- */
+/* These selectors target the stimulus wrapper divs that jsPsych generates.
+   We make them full-width and rely on .calibration-card / .ne-warning inner
+   divs for the actual visual box (max-width + margin:auto). */
+.jspsych-html-keyboard-response-stimulus,
+.jspsych-html-button-response-stimulus,
+.jspsych-html-slider-response-stimulus {
+  text-align: left;
+  line-height: 1.7;
+  width: 100%;
+}
+
+/* Typography inside instruction/calibration boxes */
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #222;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 0.5rem;
+}
+
+p {
+  margin-bottom: 0.85rem;
+  font-size: 1rem;
+}
+
+ul, ol {
+  margin: 0.5rem 0 0.85rem 1.5rem;
+}
+
+li {
+  margin-bottom: 0.4rem;
+}
+
+/* --- Trial display: standard / comparison images -------------------------- */
+/* These classes are set programmatically in ne-task.js */
+.ne-trial-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.ne-image-label {
+  font-size: 0.85rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.08em;
+  color: #ddd;
+  text-transform: uppercase;
+}
+
+.ne-image-frame {
+  border: 2px solid #555;
+  display: inline-block;
+  line-height: 0; /* removes gap below inline image */
+}
+
+.ne-image-frame img {
+  display: block;
+}
+
+/* --- Slider response ------------------------------------------------------ */
+.jspsych-html-slider-response-container {
+  margin-top: 20px;
+}
+
+.jspsych-html-slider-response-response {
+  width: 640px;
+  max-width: 90vw;
+}
+
+/* Slider labels */
+.jspsych-html-slider-response-labels {
+  font-size: 0.8rem;
+  color: #ddd;
+}
+
+/* Continue button */
+.jspsych-html-slider-response-next {
+  margin-top: 16px;
+  padding: 10px 32px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.jspsych-html-slider-response-next:hover {
+  background: #555;
+}
+
+/* --- Fixation cross ------------------------------------------------------- */
+.ne-fixation {
+  font-size: 2.5rem;
+  color: #ddd;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* --- Progress bar (optional) ---------------------------------------------- */
+.ne-progress {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: #333;
+}
+
+.ne-progress-bar {
+  height: 100%;
+  background: #aaa;
+  transition: width 0.3s ease;
+}
+
+/* --- Calibration screens -------------------------------------------------- */
+/* This is the visual white-box used for ALL instruction and calibration
+   screens. max-width + margin:auto centres it inside the full-width
+   stimulus wrapper. */
+.calibration-card {
+  background: #f0ede8;
+  border-radius: 4px;
+  padding: 36px 48px;
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  display: block;
+}
+
+.calibration-card h2 {
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Blind spot target dot */
+#blind-spot-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #e63946;
+  position: absolute;
+}
+
+/* Blind spot fixation square */
+#blind-spot-fixation {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f0ede8;
+  position: absolute;
+  left: 80px;
+}
+
+/* Gamma calibration patches */
+.gamma-patch {
+  display: inline-block;
+  width: 200px;
+  height: 200px;
+  vertical-align: middle;
+}
+
+/* Contrast screen digit overlay */
+.contrast-digit-container {
+  position: relative;
+  width: 320px;
+  height: 240px;
+  margin: 0 auto;
+}
+
+/* --- Continue / action buttons -------------------------------------------- */
+/* Used on instruction screens that advance via button click rather than
+   keypress (needed after fullscreen entry and anywhere focus is uncertain) */
+.ne-continue-btn {
+  display: block;
+  margin: 24px auto 0 auto;
+  padding: 12px 40px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ne-continue-btn:hover {
+  background: #555;
+}
+
+/* --- Unified button styling -----------------------------------------------
+   jsPsych's fullscreen plugin uses the class "jspsych-btn" for its button.
+   Override it so it matches the experiment's button style exactly.
+   This ensures ALL buttons throughout the experiment have a consistent look.
+-------------------------------------------------------------------------- */
+.jspsych-btn {
+  display: block;
+  margin: 24px auto 0 auto;
+  padding: 12px 40px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.jspsych-btn:hover {
+  background: #555;
+}
+
+/* jsPsych wraps button-response buttons in a div -- override its centering */
+.jspsych-html-button-response-button {
+  display: flex;
+  justify-content: center;
+}
+
+/* --- Warning / exclusion screen ------------------------------------------- */
+.ne-warning {
+  background: #fff3cd;
+  border: 2px solid #f0ad4e;
+  border-radius: 4px;
+  padding: 28px 36px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* --- Text input response -------------------------------------------------- */
+.ne-text-response input[type="number"],
+.ne-text-response input[type="text"] {
+  width: 140px;
+  font-size: 1.3rem;
+  padding: 8px 12px;
+  border: 2px solid #666;
+  border-radius: 3px;
+  text-align: center;
+  background: #f9f9f9;
+  margin-top: 16px;
+}
+
+/* --- Inter-trial message -------------------------------------------------- */
+.ne-inter-trial-msg {
+  font-size: 0.85rem;
+  color: #999;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  letter-spacing: 0.02em;
+}
+
+/* --- Utility -------------------------------------------------------------- */
+.center { text-align: center; }
+.small  { font-size: 0.85rem; color: #666; }
+.spacer { height: 20px; }

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<!--
+  preview.html -- Instructions Preview Tool
+  ==========================================
+  Open this file in a browser (using the same local server as the
+  experiment) to preview how all instruction screens will look.
+
+  HOW TO USE:
+    1. Start your local server (python -m http.server 8000)
+    2. Open http://localhost:8000/preview.html
+    3. Edit instructions.js and refresh the page to see changes.
+
+  No other files need to be open. This is self-contained.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Instructions Preview</title>
+  <link rel="stylesheet" href="css/experiment.css">
+  <style>
+    /* Preview-specific styles -- not part of the experiment */
+    body { background: #808080; font-family: Georgia, serif; margin: 0; padding: 0; }
+
+    #preview-chrome {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: #222; color: #ccc; padding: 10px 20px;
+      display: flex; align-items: center; gap: 16px;
+      font-family: monospace; font-size: 13px; z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    #screen-select {
+      background: #444; color: #fff; border: 1px solid #666;
+      padding: 4px 8px; border-radius: 3px; font-family: monospace;
+      font-size: 13px; flex: 1; max-width: 400px;
+    }
+    .nav-btn {
+      background: #444; color: #fff; border: 1px solid #666;
+      padding: 5px 14px; border-radius: 3px; cursor: pointer;
+      font-family: monospace; font-size: 13px;
+    }
+    .nav-btn:hover { background: #666; }
+    #screen-counter { color: #888; white-space: nowrap; }
+
+    #preview-area {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px 40px 20px;  /* top padding clears the toolbar */
+    }
+
+    .preview-screen { width: 100%; max-width: 900px; }
+
+    /* Simulated jsPsych button row */
+    .preview-btn-row {
+      display: flex; justify-content: center; margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div id="preview-chrome">
+  <span style="color:#aaa; white-space:nowrap;">PREVIEW</span>
+  <select id="screen-select"></select>
+  <button class="nav-btn" id="btn-prev">&#8592; Prev</button>
+  <button class="nav-btn" id="btn-next">Next &#8594;</button>
+  <span id="screen-counter"></span>
+  <span style="margin-left:auto; color:#666; font-size:11px;">
+    Edit instructions.js and refresh to update
+  </span>
+</div>
+
+<!-- Preview area -->
+<div id="preview-area">
+  <div id="preview-content" class="preview-screen"></div>
+</div>
+
+<!-- Load instructions (must match experiment) -->
+<script src="instructions.js"></script>
+
+<script>
+// =============================================================================
+// Preview engine
+// Builds a list of screen specs from INSTRUCTIONS, then renders them one
+// by one. Mirrors exactly what the experiment would show.
+// =============================================================================
+
+// Each entry: { label: string, html: string, hasButton: bool, buttonLabel: string }
+const SCREENS = [];
+
+function addScreen(label, html, buttonLabel) {
+  SCREENS.push({ label, html, buttonLabel: buttonLabel || null });
+}
+
+// Helper: wrap content in calibration-card div (as calibration modules do)
+function card(stepLabel, content) {
+  const stepHtml = stepLabel
+    ? '<p style="font-size:0.8rem;font-family:monospace;color:#888;margin-bottom:0.5rem;">'
+      + stepLabel + '</p>'
+    : '';
+  return '<div class="calibration-card">' + stepHtml + content + '</div>';
+}
+
+// Build screens list from INSTRUCTIONS
+function buildScreens() {
+  SCREENS.length = 0;
+
+  addScreen("Welcome",
+    card('', INSTRUCTIONS.welcome),
+    INSTRUCTIONS.button_continue);
+
+  addScreen("Calibration Intro",
+    card('', INSTRUCTIONS.calibration_intro),
+    INSTRUCTIONS.button_continue);
+
+  addScreen("Step 1: Credit Card -- Instruction",
+    card('Display Calibration -- Step 1 of 4',
+      INSTRUCTIONS.calibration_resize_intro),
+    INSTRUCTIONS.calibration_resize_button);
+
+  addScreen("Step 1: Credit Card -- Task (simulated)",
+    '<div style="text-align:center;">' +
+    '<p style="color:#ddd;font-family:monospace;font-size:0.85rem;margin-bottom:16px;">' +
+    INSTRUCTIONS.calibration_resize_prompt + '</p>' +
+    '<div style="background:#d4c9a8;border:3px solid #555;border-radius:6px;' +
+    'width:300px;height:180px;margin:0 auto;display:flex;align-items:center;' +
+    'justify-content:center;color:#888;font-size:0.85rem;">' +
+    '[Resize rectangle appears here]</div>' +
+    '<div class="preview-btn-row"><button class="ne-continue-btn">' +
+    INSTRUCTIONS.calibration_resize_confirm + '</button></div></div>');
+
+  addScreen("Step 2: Blind Spot -- Instruction",
+    card('Display Calibration -- Step 2 of 4',
+      INSTRUCTIONS.calibration_blindspot_intro),
+    INSTRUCTIONS.calibration_blindspot_button);
+
+  addScreen("Step 2: Blind Spot -- Task (simulated)",
+    '<div style="text-align:center;">' +
+    '<canvas width="700" height="140" style="background:#808080;display:block;' +
+    'margin:0 auto;border:1px dashed #666;"></canvas>' +
+    '<p style="color:#ccc;margin-top:12px;font-size:0.85rem;">' +
+    INSTRUCTIONS.calibration_blindspot_trial_label + '</p>' +
+    '<div class="preview-btn-row"><button class="ne-continue-btn">' +
+    INSTRUCTIONS.calibration_blindspot_response_button + '</button></div></div>');
+
+  addScreen("Step 2: Blind Spot -- Too Far Warning",
+    '<div class="ne-warning">' +
+    INSTRUCTIONS.calibration_blindspot_too_far.replace('{distance}', '??') +
+    '</div>',
+    INSTRUCTIONS.button_continue);
+
+  addScreen("Step 3: Gamma -- Instruction",
+    card('Display Calibration -- Step 3 of 4',
+      INSTRUCTIONS.calibration_gamma_intro),
+    INSTRUCTIONS.calibration_gamma_button);
+
+  addScreen("Step 3: Gamma -- Task (simulated)",
+    '<div style="text-align:center;">' +
+    '<p style="color:#ccc;font-family:monospace;font-size:0.85rem;margin-bottom:16px;">' +
+    INSTRUCTIONS.calibration_gamma_prompt + '</p>' +
+    '<div style="display:inline-flex;align-items:stretch;">' +
+    '<canvas width="200" height="200" id="preview-checker" ' +
+    'style="image-rendering:pixelated;display:block;"></canvas>' +
+    '<canvas width="200" height="200" id="preview-grey" ' +
+    'style="display:block;"></canvas></div>' +
+    '<p style="color:#888;margin-top:8px;font-size:0.75rem;font-family:monospace;">' +
+    'Grey value: 128</p></div>');
+
+  addScreen("Step 3: Gamma -- Warning",
+    '<div class="ne-warning">' + INSTRUCTIONS.calibration_gamma_warning + '</div>',
+    INSTRUCTIONS.button_continue);
+
+  addScreen("Step 4: Contrast Screen -- Instruction",
+    card('Display Calibration -- Step 4 of 4',
+      INSTRUCTIONS.calibration_contrast_intro));
+
+  addScreen("Step 4: Ambient Light Question",
+    card('',
+      '<p>' + INSTRUCTIONS.calibration_ambient_question + '</p>' +
+      '<div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">' +
+      INSTRUCTIONS.calibration_ambient_options.map(function(opt) {
+        return '<button class="ne-continue-btn" style="margin:0;width:100%;text-align:left;">'
+          + opt + '</button>';
+      }).join('') +
+      '</div>'));
+
+  addScreen("Task Instructions",
+    card('', INSTRUCTIONS.task_intro),
+    INSTRUCTIONS.button_continue);
+
+  addScreen("Task -- Begin (after practice)",
+    card('', INSTRUCTIONS.task_begin),
+    INSTRUCTIONS.button_continue);
+
+  addScreen("Task -- Trial: Standard image",
+    '<div style="text-align:center;">' +
+    '<div style="border:2px solid #555;display:inline-block;' +
+    'width:400px;height:300px;background:#555;' +
+    'display:flex;align-items:center;justify-content:center;color:#999;">' +
+    'Standard image appears here</div></div>');
+
+  addScreen("Task -- Trial: Slider response",
+    '<div style="text-align:center;">' +
+    '<div style="border:2px solid #555;display:inline-block;' +
+    'width:400px;height:300px;background:#555;margin-bottom:20px;' +
+    'display:flex;align-items:center;justify-content:center;color:#999;">' +
+    'Comparison image appears here</div>' +
+    '<br><input type="range" min="1" max="22" value="11" ' +
+    'style="width:500px;max-width:90vw;">' +
+    '<div style="display:flex;justify-content:space-between;width:500px;' +
+    'max-width:90vw;margin:4px auto;font-size:0.8rem;color:#ddd;">' +
+    '<span>' + (INSTRUCTIONS.task_slider_labels[0] || '') + '</span>' +
+    '<span>' + (INSTRUCTIONS.task_slider_labels[1] || '') + '</span>' +
+    '<span>' + (INSTRUCTIONS.task_slider_labels[2] || '') + '</span>' +
+    '</div>' +
+    '<div class="preview-btn-row"><button class="ne-continue-btn">' +
+    INSTRUCTIONS.task_continue_button + '</button></div></div>');
+
+  addScreen("Salience Rating -- Intro",
+    card('', INSTRUCTIONS.salience_intro),
+    INSTRUCTIONS.button_continue);
+
+  addScreen("End Screen",
+    card('', INSTRUCTIONS.end));
+}
+
+// =============================================================================
+// Renderer
+// =============================================================================
+let currentIndex = 0;
+
+function renderScreen(index) {
+  const screen = SCREENS[index];
+  const area   = document.getElementById('preview-content');
+
+  area.innerHTML =
+    screen.html +
+    (screen.buttonLabel
+      ? '<div class="preview-btn-row">' +
+        '<button class="ne-continue-btn">' + screen.buttonLabel + '</button>' +
+        '</div>'
+      : '');
+
+  // Draw gamma preview canvases if present
+  const checker = document.getElementById('preview-checker');
+  const grey    = document.getElementById('preview-grey');
+  if (checker) drawChecker(checker);
+  if (grey)    drawGrey(grey, 128);
+
+  // Update toolbar
+  document.getElementById('screen-counter').textContent =
+    (index + 1) + ' / ' + SCREENS.length;
+  document.getElementById('screen-select').value = index;
+}
+
+function drawChecker(canvas) {
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.width, h = canvas.height;
+  canvas.width  = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width  = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+  const id = ctx.createImageData(w * dpr, h * dpr);
+  for (let y = 0; y < h * dpr; y++) {
+    for (let x = 0; x < w * dpr; x++) {
+      const i = (y * w * dpr + x) * 4;
+      const v = (x + y) % 2 === 0 ? 255 : 0;
+      id.data[i] = id.data[i+1] = id.data[i+2] = v;
+      id.data[i+3] = 255;
+    }
+  }
+  ctx.putImageData(id, 0, 0);
+}
+
+function drawGrey(canvas, value) {
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'rgb(' + value + ',' + value + ',' + value + ')';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// =============================================================================
+// Controls
+// =============================================================================
+function init() {
+  buildScreens();
+
+  // Populate select dropdown
+  const sel = document.getElementById('screen-select');
+  SCREENS.forEach(function(s, i) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = (i + 1) + '. ' + s.label;
+    sel.appendChild(opt);
+  });
+
+  sel.addEventListener('change', function() {
+    currentIndex = parseInt(this.value);
+    renderScreen(currentIndex);
+  });
+
+  document.getElementById('btn-prev').addEventListener('click', function() {
+    if (currentIndex > 0) { currentIndex--; renderScreen(currentIndex); }
+    document.getElementById('screen-select').value = currentIndex;
+  });
+
+  document.getElementById('btn-next').addEventListener('click', function() {
+    if (currentIndex < SCREENS.length - 1) { currentIndex++; renderScreen(currentIndex); }
+    document.getElementById('screen-select').value = currentIndex;
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      if (currentIndex < SCREENS.length - 1) {
+        currentIndex++;
+        renderScreen(currentIndex);
+        document.getElementById('screen-select').value = currentIndex;
+      }
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderScreen(currentIndex);
+        document.getElementById('screen-select').value = currentIndex;
+      }
+    }
+  });
+
+  renderScreen(0);
+}
+
+window.addEventListener('load', init);
+</script>
+</body>
+</html>

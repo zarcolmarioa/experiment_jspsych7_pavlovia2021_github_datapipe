@@ -1,0 +1,484 @@
+{
+  "generated_by": "prepare_stimuli.py",
+  "main_stimuli": [
+    {
+      "id": "p01",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_301_h.jpg"
+    },
+    {
+      "id": "p02",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_264_v.jpg"
+    },
+    {
+      "id": "p03",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_221_h.jpg"
+    },
+    {
+      "id": "p04",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_069_h.jpg"
+    },
+    {
+      "id": "p05",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_015_h.jpg"
+    },
+    {
+      "id": "p06",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_224_h.jpg"
+    },
+    {
+      "id": "p07",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_126_h.jpg"
+    },
+    {
+      "id": "p08",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_214_h.jpg"
+    },
+    {
+      "id": "p09",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_148_h.jpg"
+    },
+    {
+      "id": "p10",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_106_v.jpg"
+    },
+    {
+      "id": "p11",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_222_h.jpg"
+    },
+    {
+      "id": "p12",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_019_h.jpg"
+    },
+    {
+      "id": "p13",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_157_h.jpg"
+    },
+    {
+      "id": "p14",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_053_h.jpg"
+    },
+    {
+      "id": "p15",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_141_v.jpg"
+    },
+    {
+      "id": "p16",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_158_h.jpg"
+    },
+    {
+      "id": "p17",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_108_h.jpg"
+    },
+    {
+      "id": "p18",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_210_h.jpg"
+    },
+    {
+      "id": "p19",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_311_h.jpg"
+    },
+    {
+      "id": "p20",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_334_h.jpg"
+    },
+    {
+      "id": "p21",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_117_h.jpg"
+    },
+    {
+      "id": "p22",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_188_h.jpg"
+    },
+    {
+      "id": "p23",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_156_h.jpg"
+    },
+    {
+      "id": "p24",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_033_h.jpg"
+    },
+    {
+      "id": "p25",
+      "valence": "positive",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_285_h.jpg"
+    },
+    {
+      "id": "n01",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_040_h.jpg"
+    },
+    {
+      "id": "n02",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_189_v.jpg"
+    },
+    {
+      "id": "n03",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_212_h.jpg"
+    },
+    {
+      "id": "n04",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_252_h.jpg"
+    },
+    {
+      "id": "n05",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_107_h.jpg"
+    },
+    {
+      "id": "n06",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_117_h.jpg"
+    },
+    {
+      "id": "n07",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_224_h.jpg"
+    },
+    {
+      "id": "n08",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_137_h.jpg"
+    },
+    {
+      "id": "n09",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_046_h.jpg"
+    },
+    {
+      "id": "n10",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_062_v.jpg"
+    },
+    {
+      "id": "n11",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_039_h.jpg"
+    },
+    {
+      "id": "n12",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_258_h.jpg"
+    },
+    {
+      "id": "n13",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_047_h.jpg"
+    },
+    {
+      "id": "n14",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_201_v.jpg"
+    },
+    {
+      "id": "n15",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_245_v.jpg"
+    },
+    {
+      "id": "n16",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_078_h.jpg"
+    },
+    {
+      "id": "n17",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_021_h.jpg"
+    },
+    {
+      "id": "n18",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_125_h.jpg"
+    },
+    {
+      "id": "n19",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_181_h.jpg"
+    },
+    {
+      "id": "n20",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_136_h.jpg"
+    },
+    {
+      "id": "n21",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_071_h.jpg"
+    },
+    {
+      "id": "n22",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_099_v.jpg"
+    },
+    {
+      "id": "n23",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_149_h.jpg"
+    },
+    {
+      "id": "n24",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_013_h.jpg"
+    },
+    {
+      "id": "n25",
+      "valence": "negative",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_308_h.jpg"
+    },
+    {
+      "id": "u01",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_170_v.jpg"
+    },
+    {
+      "id": "u02",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_154_h.jpg"
+    },
+    {
+      "id": "u03",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_318_h.jpg"
+    },
+    {
+      "id": "u04",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_325_h.jpg"
+    },
+    {
+      "id": "u05",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_345_h.jpg"
+    },
+    {
+      "id": "u06",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_218_v.jpg"
+    },
+    {
+      "id": "u07",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_201_h.jpg"
+    },
+    {
+      "id": "u08",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_166_h.jpg"
+    },
+    {
+      "id": "u09",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_111_h.jpg"
+    },
+    {
+      "id": "u10",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_053_h.jpg"
+    },
+    {
+      "id": "u11",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_040_v.jpg"
+    },
+    {
+      "id": "u12",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_055_h.jpg"
+    },
+    {
+      "id": "u13",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_188_h.jpg"
+    },
+    {
+      "id": "u14",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_059_h.jpg"
+    },
+    {
+      "id": "u15",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_054_h.jpg"
+    },
+    {
+      "id": "u16",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_104_h.jpg"
+    },
+    {
+      "id": "u17",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_142_h.jpg"
+    },
+    {
+      "id": "u18",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_090_h.jpg"
+    },
+    {
+      "id": "u19",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Landscapes_143_h.jpg"
+    },
+    {
+      "id": "u20",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/People_227_h.jpg"
+    },
+    {
+      "id": "u21",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_246_v.jpg"
+    },
+    {
+      "id": "u22",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_020_h.jpg"
+    },
+    {
+      "id": "u23",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_113_h.jpg"
+    },
+    {
+      "id": "u24",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Animals_010_h.jpg"
+    },
+    {
+      "id": "u25",
+      "valence": "neutral",
+      "category": "scene",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_022_h.jpg"
+    }
+  ],
+  "practice_stimuli": [
+    {
+      "id": "prp01",
+      "valence": "positive",
+      "category": "practice",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Faces_144_h.jpg"
+    },
+    {
+      "id": "prn01",
+      "valence": "negative",
+      "category": "practice",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_129_h.jpg"
+    },
+    {
+      "id": "pru01",
+      "valence": "neutral",
+      "category": "practice",
+      "source": "/home/mariozarco/Documents/postdoctoral_research/dpd_experiments/naps_h/NAPS_H/Objects_089_h.jpg"
+    }
+  ],
+  "noise_levels": [
+    10,
+    15,
+    20
+  ],
+  "standard_noise_level": 15,
+  "n_per_valence": 25,
+  "grating_bars": 7,
+  "grating_bar_width": 40
+}
