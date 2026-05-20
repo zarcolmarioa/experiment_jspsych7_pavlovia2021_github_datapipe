@@ -358,41 +358,6 @@ _STRINGS.en = {
     <p>Thank you for your interest.</p>
   `,
 
-  // {width} is replaced at runtime with the measured window.innerWidth value.
-  warn_zoom: `
-    <h2>Browser Zoom May Be Too Large</h2>
-    <p>We have detected that your browser window is currently
-       <strong>{width} px</strong> wide, which is narrower than the
-       minimum we need (<strong>780 px</strong>). Part of the task
-       may not display correctly.</p>
-    <p>This is usually caused by the browser zoom level being set too high.
-       To reduce it:</p>
-    <ul>
-      <li>Press <strong>Ctrl</strong> and <strong>&minus;</strong> (minus)
-          on your keyboard — repeat until the page looks smaller.</li>
-      <li>On a Mac, use <strong>Cmd &minus;</strong> instead.</li>
-      <li>Or open the browser menu, find <strong>Zoom</strong>,
-          and set it to <strong>100%</strong>.</li>
-    </ul>
-    <p>Click <strong>Continue</strong> when you are ready to proceed.</p>
-  `,
-
-  // {depth} is replaced at runtime with the measured window.screen.colorDepth value.
-  warn_color_depth: `
-    <h2>Display Colour Mode</h2>
-    <p>Your display appears to be running in a reduced colour mode
-       (<strong>{depth}-bit</strong>). This study uses subtle differences
-       in brightness and colour that require a <strong>24-bit</strong>
-       (True Colour) display to be shown correctly.</p>
-    <p>If possible, please check your display settings and set the colour
-       depth to <strong>24-bit</strong> or <strong>True Colour</strong>
-       before continuing.</p>
-    <p>If you are connecting via remote desktop software, please try to
-       complete the study on a local computer instead.</p>
-    <p>You may still continue if you cannot change this setting.
-       Your data will be flagged for review.</p>
-  `,
-
 };
 
 // =============================================================================

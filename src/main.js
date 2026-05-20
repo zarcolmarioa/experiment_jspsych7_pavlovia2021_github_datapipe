@@ -185,7 +185,10 @@ if (CONFIG.calibration.fullscreen) {
   timeline.push(fullscreen_trial);
 }
 
-// ---- 2. Browser check -----------------------------------------------------
+// ---- 2. Browser type check ------------------------------------------------
+// Uses a custom user-agent approach for precise control over which browsers
+// are flagged. Kept separate from the refresh rate measurement below so that
+// browser-type logic is not affected by changes to jsPsychBrowserCheck.
 var browser_check_fn = {
   type: jsPsychCallFunction,
   func: function () {
@@ -215,6 +218,21 @@ var browser_warning = {
   data: { trial_type: 'browser_warning' },
 };
 timeline.push(browser_warning);
+
+// ---- 2b. Refresh rate measurement ----------------------------------------
+// Uses jsPsychBrowserCheck with the vsync_rate feature, which internally
+// measures the display refresh rate via requestAnimationFrame (~500 ms).
+// Runs silently (no participant-facing UI) since no inclusion_function is set.
+// Result is stored automatically in the trial data as vsync_rate (Hz).
+var refresh_rate_check = {
+  type: jsPsychBrowserCheck,
+  features: ['vsync_rate'],
+  on_finish: function (data) {
+    console.log('[BrowserCheck] Refresh rate: ' +
+      (data.vsync_rate !== null ? data.vsync_rate + ' Hz' : 'unknown'));
+  },
+};
+timeline.push(refresh_rate_check);
 
 // ---- 3. Welcome -----------------------------------------------------------
 var welcome = {

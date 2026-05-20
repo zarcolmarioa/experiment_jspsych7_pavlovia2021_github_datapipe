@@ -1,8 +1,13 @@
 // =============================================================================
-// src/main.js -- Timeline Assembler (Pavlovia-compatible)
+// src/main.js -- Timeline Assembler
 //
-// Follows the structure of the working Pavlovia simple_reaction_time example.
-// Uses CONFIG.platform.online to switch between local and Pavlovia modes.
+// Platform modes (set in config.js):
+//   local    -- CONFIG.platform.online = false, CONFIG.platform.github = false
+//               Opens index.html directly; CSV downloaded at end.
+//   github   -- CONFIG.platform.online = false, CONFIG.platform.github = true
+//               Hosted on GitHub Pages; data saved to OSF via DataPipe.
+//   pavlovia -- CONFIG.platform.online = true,  CONFIG.platform.github = false
+//               Deployed on Pavlovia; data saved by Pavlovia.
 // =============================================================================
 
 // ---------------------------------------------------------------------------
@@ -38,8 +43,9 @@ var jsPsych = initJsPsych({
 
   on_finish: function () {
     _removeFullscreenHandler();
-    if (!CONFIG.platform.online) {
-      // Local mode: download CSV
+    // Local mode only: download CSV directly in the browser.
+    // GitHub and Pavlovia modes handle saving via their own timeline nodes.
+    if (!CONFIG.platform.online && !CONFIG.platform.github) {
       var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
       var filename = CONFIG.experiment.name + '_' + _participantId + '_' + timestamp + '.csv';
       jsPsych.data.get().localSave('csv', filename);
@@ -59,7 +65,7 @@ document.body.style.backgroundColor = CONFIG.display.background_color;
 var timeline = [];
 
 // ---------------------------------------------------------------------------
-// Pavlovia init -- must be the FIRST timeline node (online only)
+// Pavlovia init -- first timeline node (Pavlovia mode only)
 // ---------------------------------------------------------------------------
 var pavloviaInfo;
 
@@ -300,7 +306,7 @@ if (CONFIG.questionnaires.enabled) {
   timeline.push.apply(timeline, Questionnaires.getNodes(jsPsych));
 }
 
-// ---- 9. End screen --------------------------------------------------------
+// ---- 10. End screen -------------------------------------------------------
 var end_screen = {
   type: jsPsychHtmlKeyboardResponse,
   stimulus:
@@ -312,7 +318,7 @@ var end_screen = {
 };
 timeline.push(end_screen);
 
-// ---- Stamp experiment-level properties BEFORE Pavlovia finish -------------
+// ---- 11. Stamp experiment-level properties --------------------------------
 var stamp_properties = {
   type: jsPsychCallFunction,
   func: function () {
@@ -327,9 +333,25 @@ var stamp_properties = {
 };
 timeline.push(stamp_properties);
 
-// ---------------------------------------------------------------------------
-// Pavlovia finish -- must be the LAST timeline node (online only)
-// ---------------------------------------------------------------------------
+// ---- 12. GitHub + DataPipe save -- (GitHub Pages mode only) ---------------
+if (CONFIG.platform.github) {
+  var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  var datapipe_filename = _participantId + '_' + timestamp + '.csv';
+
+  var save_data = {
+    type: jsPsychPipe,
+    action: 'save',
+    experiment_id: CONFIG.platform.datapipe_experiment_id,
+    filename: datapipe_filename,
+    data_string: function () { return jsPsych.data.get().csv(); },
+    on_finish: function (data) {
+      console.log('[DataPipe] Save attempted. Success: ' + data.success);
+    },
+  };
+  timeline.push(save_data);
+}
+
+// ---- 13. Pavlovia finish -- last timeline node (Pavlovia mode only) -------
 if (CONFIG.platform.online) {
   var pavlovia_finish = {
     type: jsPsychPavlovia,
