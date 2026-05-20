@@ -1,5 +1,5 @@
 # Local testing dependencies (Pavlovia provides lib/ automatically)
-lib/
+# lib/
 
 # Data files (Pavlovia saves data on its server)
 data/
