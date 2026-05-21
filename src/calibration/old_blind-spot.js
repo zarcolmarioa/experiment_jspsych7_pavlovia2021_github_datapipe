@@ -23,7 +23,7 @@
 
 const BlindSpotCalibration = (function () {
 
-  const BLIND_SPOT_DEG = 13.5;
+  const BLIND_SPOT_DEG = 15.5;
   const BLIND_SPOT_RAD = BLIND_SPOT_DEG * (Math.PI / 180);
   const N_REPETITIONS  = 5;
   const DOT_STEP_CSS   = 4;   // CSS px per animation frame (~60fps)
@@ -277,6 +277,9 @@ const BlindSpotCalibration = (function () {
       },
 
       data: { calibration_step: 'blind_spot_task' },
+      on_finish: function (data) {
+        data.blind_spot_offsets_px = window._blindSpotOffsets || [];
+      },
     };
 
     // ---- Node 3: compute & store --------------------------------------------
@@ -307,20 +310,11 @@ const BlindSpotCalibration = (function () {
           console.log('[BlindSpot] Distance: ' + distCm.toFixed(1) + ' cm');
         }
 
-        // Store each individual trial offset as a separate named property.
-        // Trials with no valid response (null) are stored as null.
-        // Indices are 1-based (blind_spot_offset_px_1 ... blind_spot_offset_px_N).
-        const offsetProps = {};
-        for (let i = 0; i < N_REPETITIONS; i++) {
-          offsetProps['blind_spot_offset_px_' + (i + 1)] =
-            offsets[i] !== undefined ? Math.round(offsets[i]) : null;
-        }
-
-        jsPsych.data.addProperties(Object.assign(offsetProps, {
+        jsPsych.data.addProperties({
           viewing_distance_cm:  distCm !== null ? Math.round(distCm) : null,
           blind_spot_median_px: Math.round(medianPx),
           blind_spot_n_valid:   offsets.length,
-        }));
+        });
 
         if (pxPerMm && distCm) {
           const degPerPx = (Math.atan(1 / (pxPerMm * distCm * 10)) * 180) / Math.PI;
