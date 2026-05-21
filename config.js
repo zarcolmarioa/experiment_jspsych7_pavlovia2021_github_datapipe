@@ -51,7 +51,7 @@ const CONFIG = {
     //   https://pipe.jspsych.org — copy it exactly.
     // Data are saved to the OSF folder you configured in DataPipe
     //   (your folder is: data_calibration_phase).
-    datapipe_experiment_id: "YOUR_DATAPIPE_EXPERIMENT_ID",
+    datapipe_experiment_id: "19tHuDezXIOo" // "YOUR_DATAPIPE_EXPERIMENT_ID",
   },
 
   // ---------------------------------------------------------------------------
