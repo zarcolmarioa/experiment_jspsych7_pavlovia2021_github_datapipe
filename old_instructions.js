@@ -107,9 +107,10 @@ _STRINGS.en = {
 
   calibration_gamma_intro: `
     <p>Next, we will measure a property of your screen that affects how
-       brightness is displayed.</p>
-    <p>You will see <strong>two grey squares</strong> placed side by side,
-       sharing a common border:</p>
+       brightness is displayed. You will complete this matching task
+       <strong>three times</strong>, each with a slightly different pattern.</p>
+    <p>On each match you will see <strong>two grey squares</strong> placed
+       side by side, sharing a common border:</p>
     <ul>
       <li>The <strong>left square</strong> has a fixed pattern of
           alternating black and white dots.</li>
@@ -118,9 +119,10 @@ _STRINGS.en = {
     </ul>
     <p>Use the <strong>arrow buttons</strong> to adjust the right square
        until both squares look <strong>the same shade of grey</strong>.</p>
-    <p>Try squinting slightly or stepping back from the screen -- this
+    <p>Try squinting slightly or stepping back from the screen — this
        can help the pattern on the left appear more like a uniform grey.</p>
-    <p>Click <strong>Confirm match</strong> when you are satisfied.</p>
+    <p>Click <strong>Confirm match</strong> when you are satisfied.
+       The next match will then begin automatically.</p>
   `,
 
   calibration_gamma_button: `Begin brightness check`,
