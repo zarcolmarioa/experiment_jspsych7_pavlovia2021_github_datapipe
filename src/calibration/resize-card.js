@@ -258,24 +258,10 @@ const ResizeCardCalibration = (function () {
       },
     };
 
-    // ---- Node 4: neutral retry instruction --------------------------------
-    // Shown to ALL participants regardless of first-attempt quality.
-    const retryInstructionNode = {
-      type: jsPsychHtmlButtonResponse,
-      stimulus:
-        '<div class="calibration-card">' +
-        '<h2>Display Calibration &mdash; Step 1 of 4 (second measurement)</h2>' +
-        INSTRUCTIONS.calibration_resize_retry +
-        '</div>',
-      choices: [INSTRUCTIONS.calibration_resize_button],
-      button_html: '<button class="ne-continue-btn">%choice%</button>',
-      data: { calibration_step: 'resize_card_retry_instruction' },
-    };
-
-    // ---- Node 5: second resize attempt ------------------------------------
+    // ---- Node 4: second resize attempt ------------------------------------
     const resizeNode2 = _makeResizeNode(jsPsych, 2);
 
-    // ---- Node 6: compute and store final results --------------------------
+    // ---- Node 5: compute and store final results --------------------------
     // px_per_mm is the average of both attempts (each attempt itself averaged
     // across width and height axes).
     const storeNode = {
@@ -334,7 +320,6 @@ const ResizeCardCalibration = (function () {
       instructionNode,
       resizeNode1,
       evalNode1,
-      retryInstructionNode,
       resizeNode2,
       storeNode,
     ];

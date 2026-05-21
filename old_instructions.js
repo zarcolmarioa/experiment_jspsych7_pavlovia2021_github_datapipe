@@ -65,6 +65,15 @@ _STRINGS.en = {
 
   calibration_resize_confirm: `This matches my card`,
 
+  // Shown between the first and second resize attempts.
+  // Neutral in tone — all participants repeat the task twice.
+  calibration_resize_retry: `
+    <p>Thank you. Please match the size of your card once more.</p>
+    <p>Make sure to adjust <strong>both</strong> the right-edge handle
+       (width) and the bottom-edge handle (height) until the rectangle
+       matches your card as closely as possible.</p>
+  `,
+
   calibration_blindspot_intro: `
     <p>Next, we will estimate <strong>how far you are sitting from the
        screen</strong>.</p>
