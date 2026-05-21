@@ -51,7 +51,7 @@ const CONFIG = {
     //   https://pipe.jspsych.org — copy it exactly.
     // Data are saved to the OSF folder you configured in DataPipe
     //   (your folder is: data_calibration_phase).
-    datapipe_experiment_id: "19tHuDezXIOo" // "YOUR_DATAPIPE_EXPERIMENT_ID",
+    datapipe_experiment_id: "YOUR_DATAPIPE_EXPERIMENT_ID",
   },
 
   // ---------------------------------------------------------------------------
@@ -75,10 +75,6 @@ const CONFIG = {
     gamma:           true,   // Gamma estimation via alternating-pixel matching
     contrast_screen: true,   // Hidden-digit contrast check (attention gate)
     ambient_light:   true,   // Single self-report item about room lighting
-
-    // Gamma: exclude participant if estimated gamma deviates beyond this range.
-    // Set to null to log but never exclude.
-    gamma_exclusion_range: [1.5, 3.0],  // [min, max] acceptable gamma
 
     // Gamma calibration visual arrangement.
     // Options:
@@ -310,7 +306,7 @@ const CONFIG = {
       "noise.comparison_levels":     ["10", "15", "20"],
       "noise.standard_level":        "15",
       "stimuli.repetitions":         1,
-      "stimuli.single_exposure":     false,
+      "stimuli.single_exposure":     true,
     },
     emotional_salience_control: {
       "response.type":               "text",
@@ -399,7 +395,7 @@ const CONFIG = {
   // Set enabled: false to skip entirely (default for the main experiment).
   // ---------------------------------------------------------------------------
   stimulus_evaluation: {
-    enabled: false,   // Set to true only for the stimulus evaluation study
+    enabled: true,   // Set to true only for the stimulus evaluation study
 
     // Maximum number of images to show. Set to null to show all images.
     // Set to a small number (e.g. 3) for quick testing.
@@ -438,7 +434,7 @@ const CONFIG = {
   questionnaires: {
     enabled: false,    // Master switch: false = skip all questionnaires
     names: [
-      { id: "cds", enabled: false },    // Cambridge Depersonalization Scale
+      { id: "cds", enabled: true },    // Cambridge Depersonalization Scale
       // Add more here, e.g.:
       // { id: "phq9", enabled: true },
     ],
