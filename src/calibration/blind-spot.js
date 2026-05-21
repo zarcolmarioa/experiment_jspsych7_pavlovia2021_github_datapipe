@@ -26,7 +26,7 @@ const BlindSpotCalibration = (function () {
   const BLIND_SPOT_DEG = 13.5;
   const BLIND_SPOT_RAD = BLIND_SPOT_DEG * (Math.PI / 180);
   const N_REPETITIONS  = 5;
-  const DOT_STEP_CSS   = 1;   // CSS px per animation frame (~60fps)
+  const DOT_STEP_CSS   = 4;   // CSS px per animation frame (~60fps)
   const DOT_RADIUS_CSS = 10;  // CSS px
   const FIX_SIZE_CSS   = 22;  // CSS px, fixation square side
   const CANVAS_H_CSS   = 140; // CSS px, fixed height
@@ -58,9 +58,8 @@ const BlindSpotCalibration = (function () {
   // ---------------------------------------------------------------------------
   function _drawFixation(ctx, fixX) {
     const midY = CANVAS_H_CSS / 2;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth   = 3;
-    ctx.strokeRect(
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(
       fixX - FIX_SIZE_CSS / 2,
       midY - FIX_SIZE_CSS / 2,
       FIX_SIZE_CSS, FIX_SIZE_CSS

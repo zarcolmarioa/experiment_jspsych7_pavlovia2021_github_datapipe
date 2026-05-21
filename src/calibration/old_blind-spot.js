@@ -26,7 +26,7 @@ const BlindSpotCalibration = (function () {
   const BLIND_SPOT_DEG = 13.5;
   const BLIND_SPOT_RAD = BLIND_SPOT_DEG * (Math.PI / 180);
   const N_REPETITIONS  = 5;
-  const DOT_STEP_CSS   = 4;   // CSS px per animation frame (~60fps)
+  const DOT_STEP_CSS   = 1;   // CSS px per animation frame (~60fps)
   const DOT_RADIUS_CSS = 10;  // CSS px
   const FIX_SIZE_CSS   = 22;  // CSS px, fixation square side
   const CANVAS_H_CSS   = 140; // CSS px, fixed height
@@ -92,7 +92,8 @@ const BlindSpotCalibration = (function () {
   //   - btn shows "Start trial" label
   //   - user clicks -> dot animation starts, btn shows "Dot disappeared"
   //   - user clicks -> offset recorded, animation stops
-  //   - resolves with offset (CSS px from fixation) or null on timeout
+  //   - if dot reaches canvas edge with no click -> resolves with the
+  //     canvas-edge offset (canvasW - fixX), a lower bound on the blind spot
   // ---------------------------------------------------------------------------
   function _runOneTrial(canvas, ctx, canvasW, fixX, responseBtn) {
     return new Promise(function (resolve) {
@@ -119,18 +120,19 @@ const BlindSpotCalibration = (function () {
           // Draw fixation only (dot gone) as visual feedback
           ctx.clearRect(0, 0, canvasW, CANVAS_H_CSS);
           _drawFixation(ctx, fixX);
-          resolve(dotX - fixX);
+          resolve({ offset: dotX - fixX, timeout: false });
         }
       }
 
       function animate() {
         dotX += DOT_STEP_CSS;
         if (dotX > canvasW - DOT_RADIUS_CSS - 10) {
-          // Timeout -- dot reached edge with no response
+          // Dot reached edge with no response.
+          // Resolve with the full canvas-edge offset as a lower bound.
           cancelAnimationFrame(animId);
           responseBtn.removeEventListener('click', onBtnClick);
           phase = 'done';
-          resolve(null);
+          resolve({ offset: canvasW - fixX, timeout: true });
           return;
         }
         ctx.clearRect(0, 0, canvasW, CANVAS_H_CSS);
@@ -231,8 +233,9 @@ const BlindSpotCalibration = (function () {
           return;
         }
 
-        const ctx     = _setupCanvas(canvas, canvasW);
-        const offsets = [];
+        const ctx      = _setupCanvas(canvas, canvasW);
+        const offsets  = [];
+        let   nTimeout = 0;
 
         // Draw initial ready state
         _drawReady(ctx, canvasW, fixX, 1, N_REPETITIONS);
@@ -242,11 +245,12 @@ const BlindSpotCalibration = (function () {
           for (let i = 0; i < N_REPETITIONS; i++) {
             _drawReady(ctx, canvasW, fixX, i + 1, N_REPETITIONS);
 
-            const offset = await _runOneTrial(canvas, ctx, canvasW, fixX, btn);
+            const result = await _runOneTrial(canvas, ctx, canvasW, fixX, btn);
 
-            if (offset !== null && offset > 0) {
-              offsets.push(offset);
-            }
+            // result is always { offset, timeout }.
+            // On timeout, offset = canvasW - fixX (lower bound on blind spot).
+            offsets.push(result.offset);
+            if (result.timeout) nTimeout++;
 
             // Brief inter-trial pause (shown after every trial, including the last)
             btn.disabled = true;
@@ -270,7 +274,8 @@ const BlindSpotCalibration = (function () {
             await new Promise(function (r) { setTimeout(r, 900); });
           }
 
-          window._blindSpotOffsets = offsets;
+          window._blindSpotOffsets  = offsets;
+          window._blindSpotNTimeout = nTimeout;
           display.innerHTML = '';
           done();
         })();
@@ -283,11 +288,12 @@ const BlindSpotCalibration = (function () {
     const storeNode = {
       type: jsPsychCallFunction,
       func: function () {
-        const offsets = window._blindSpotOffsets || [];
-        const pxPerMm = window._pxPerMm || null;
+        const offsets  = window._blindSpotOffsets  || [];
+        const nTimeout = window._blindSpotNTimeout || 0;
+        const pxPerMm  = window._pxPerMm || null;
 
         if (offsets.length === 0) {
-          console.warn('[BlindSpot] No valid measurements.');
+          console.warn('[BlindSpot] No measurements recorded.');
           window._viewingDistanceCm = null;
           window._blindSpotTooFar   = false;
           return;
@@ -302,14 +308,15 @@ const BlindSpotCalibration = (function () {
           maxDist !== null && distCm !== null && distCm > maxDist;
 
         console.log('[BlindSpot] Offsets: ' + offsets.join(', '));
+        console.log('[BlindSpot] Timeouts: ' + nTimeout + ' of ' + N_REPETITIONS);
         console.log('[BlindSpot] Median: ' + medianPx.toFixed(1) + ' css px');
         if (distCm !== null) {
           console.log('[BlindSpot] Distance: ' + distCm.toFixed(1) + ' cm');
         }
 
         // Store each individual trial offset as a separate named property.
-        // Trials with no valid response (null) are stored as null.
         // Indices are 1-based (blind_spot_offset_px_1 ... blind_spot_offset_px_N).
+        // Timeout trials store the canvas-edge offset (lower bound).
         const offsetProps = {};
         for (let i = 0; i < N_REPETITIONS; i++) {
           offsetProps['blind_spot_offset_px_' + (i + 1)] =
@@ -319,7 +326,7 @@ const BlindSpotCalibration = (function () {
         jsPsych.data.addProperties(Object.assign(offsetProps, {
           viewing_distance_cm:  distCm !== null ? Math.round(distCm) : null,
           blind_spot_median_px: Math.round(medianPx),
-          blind_spot_n_valid:   offsets.length,
+          blind_spot_n_timeout: nTimeout,
         }));
 
         if (pxPerMm && distCm) {
