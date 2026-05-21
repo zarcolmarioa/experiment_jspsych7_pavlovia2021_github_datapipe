@@ -25,7 +25,7 @@ const BlindSpotCalibration = (function () {
 
   const BLIND_SPOT_DEG = 13.5;
   const BLIND_SPOT_RAD = BLIND_SPOT_DEG * (Math.PI / 180);
-  const N_REPETITIONS  = 5;
+  const N_REPETITIONS  = 3;
   const DOT_STEP_CSS   = 1;   // CSS px per animation frame (~60fps)
   const DOT_RADIUS_CSS = 10;  // CSS px
   const FIX_SIZE_CSS   = 22;  // CSS px, fixation square side

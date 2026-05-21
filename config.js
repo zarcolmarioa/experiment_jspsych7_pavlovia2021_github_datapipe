@@ -306,7 +306,7 @@ const CONFIG = {
       "noise.comparison_levels":     ["10", "15", "20"],
       "noise.standard_level":        "15",
       "stimuli.repetitions":         1,
-      "stimuli.single_exposure":     true,
+      "stimuli.single_exposure":     false,
     },
     emotional_salience_control: {
       "response.type":               "text",

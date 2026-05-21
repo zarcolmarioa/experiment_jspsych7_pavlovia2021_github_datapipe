@@ -56,7 +56,7 @@ const GammaCalibration = (function () {
 
   const PATCH_SIZE_CSS = 220;  // CSS px: size of each patch square
   const INITIAL_GREY   = 128;  // starting grey value (reset for each match)
-  const DENSITIES      = [0.25, 0.50, 0.75]; // checkerboard densities (3 matches)
+  const DENSITIES      = [0.40, 0.50, 0.60]; // checkerboard densities (3 matches)
 
   // Centre-surround geometry
   const CS_OUTER_R_CSS = PATCH_SIZE_CSS / 2;
