@@ -120,7 +120,7 @@ const ContrastScreenCalibration = (function () {
               '</div>' +
 
               '<p id="contrast-feedback" ' +
-              'style="color:#e63946; margin-top:14px; font-size:0.85rem; ' +
+              'style="color:#f0ede8; margin-top:14px; font-size:0.85rem; ' +
               'min-height:1.4em;"></p>' +
 
               '</div>';
@@ -166,24 +166,17 @@ const ContrastScreenCalibration = (function () {
                 input.removeEventListener('keydown', onKey);
 
                 if (parsed === digit) {
-                  // Correct
-                  if (feedback) {
-                    feedback.style.color = '#4caf50';
-                    feedback.textContent = 'Correct!';
-                  }
+                  // Correct — advance silently after brief pause
+                  if (feedback) feedback.textContent = '';
                   setTimeout(function () {
                     resolve({ delta: delta, digit: digit, entered: entered,
                               correct: true, attempts: attempts });
-                  }, 600);
+                  }, 300);
 
                 } else if (attempts >= MAX_ATTEMPTS) {
                   // Used both attempts
                   if (feedback) {
-                    feedback.style.color = '#e63946';
-                    feedback.textContent =
-                      checkIndex < total - 1
-                        ? 'Moving on to the next check.'
-                        : 'Moving on.';
+                    feedback.textContent = 'Moving to the next check.';
                   }
                   setTimeout(function () {
                     resolve({ delta: delta, digit: digit, entered: entered,
@@ -193,9 +186,7 @@ const ContrastScreenCalibration = (function () {
                 } else {
                   // First attempt wrong, one more try
                   if (feedback) {
-                    feedback.style.color = '#e63946';
-                    feedback.textContent =
-                      'Incorrect. One more try.';
+                    feedback.textContent = 'Try again.';
                   }
                   input.value = '';
                   input.focus();
