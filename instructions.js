@@ -77,6 +77,9 @@ _STRINGS.en = {
       <li>A <strong>red dot</strong> will move across the screen.</li>
       <li>Click the button as soon as the dot
           <strong>disappears</strong>.</li>
+      <li>If the dot <strong>does not disappear</strong> before reaching
+          the edge of the screen, simply <strong>do not press</strong>
+          the button. The trial will advance automatically.</li>
       <li>This will repeat several times.</li>
     </ol>
     <p>It is important to keep your eye fixed on the white square

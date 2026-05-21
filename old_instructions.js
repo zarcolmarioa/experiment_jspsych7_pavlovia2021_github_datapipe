@@ -44,11 +44,12 @@ _STRINGS.en = {
   // ---------------------------------------------------------------------------
 
   calibration_resize_intro: `
-    <p>We need to measure your screen size.</p>
+    <p>We need to measure your screen size. You will do this <strong>twice</strong>
+       to improve accuracy.</p>
     <p>Please find a <strong>credit card, debit card, or bank card</strong>.
        Any standard card will work. If you do not have one,
        a driving licence is also fine.</p>
-    <p>On the next screen you will see a rectangle. Drag the
+    <p>On the next screens you will see a rectangle. Drag the
        <strong>right edge</strong> to adjust its <strong>width</strong>,
        and the <strong>bottom edge</strong> to adjust its
        <strong>height</strong>, until the rectangle matches the
@@ -64,15 +65,6 @@ _STRINGS.en = {
   `,
 
   calibration_resize_confirm: `This matches my card`,
-
-  // Shown between the first and second resize attempts.
-  // Neutral in tone — all participants repeat the task twice.
-  calibration_resize_retry: `
-    <p>Thank you. Please match the size of your card once more.</p>
-    <p>Make sure to adjust <strong>both</strong> the right-edge handle
-       (width) and the bottom-edge handle (height) until the rectangle
-       matches your card as closely as possible.</p>
-  `,
 
   calibration_blindspot_intro: `
     <p>Next, we will estimate <strong>how far you are sitting from the
