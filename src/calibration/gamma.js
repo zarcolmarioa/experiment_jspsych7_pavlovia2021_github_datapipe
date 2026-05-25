@@ -5,8 +5,9 @@
 // PROCEDURE:
 //   Three sequential luminance matches are collected, each using a
 //   checkerboard of a different density (proportion of white pixels).
-//   The densities used are 0.40, 0.50, and 0.60, presented in a
-//   RANDOMISED ORDER that differs across participants.
+//   The densities used are 0.375, 0.50, and 0.625 — values that the
+//   Bayer 4×4 dither matrix can achieve exactly with no rounding error.
+//   They are presented in a RANDOMISED ORDER that differs across participants.
 //
 //   Using three different densities:
 //     (a) Reduces noise: the final gamma is the median of three estimates.
@@ -21,14 +22,24 @@
 //   At d = 0.5 this reduces to the standard formula.
 //
 // CHECKERBOARD PATTERNS (drawn at physical pixel resolution × devicePixelRatio):
-//   density 0.40: 5-pixel horizontal stripe period, 2 white per period
-//                  i.e. x % 5 < 2  (40% white)
-//   density 0.50: standard alternating checkerboard  (x+y) % 2 === 0
-//   density 0.60: 5-pixel horizontal stripe period, 3 white per period
-//                  i.e. x % 5 < 3  (60% white)
-//   density 0.25: 2×2 block, top-left corner white  (legacy support)
-//   density 0.75: 2×2 block, all except top-left   (legacy support)
-//   Any other density: 10-pixel horizontal period, Math.round(d×10) white px
+//   density 0.50:  standard alternating checkerboard  (x+y) % 2 === 0
+//                  finest pattern — above CSF cutoff at normal viewing distance
+//   density 0.375: Bayer 4×4 ordered dither, threshold < 6/16
+//                  6/16 = 0.375 exactly — no directional stripe artifact
+//   density 0.625: Bayer 4×4 ordered dither, threshold < 10/16
+//                  10/16 = 0.625 exactly — no directional stripe artifact
+//   Legacy (0.25, 0.75): 2×2 block patterns retained for backward compatibility
+//
+// BAYER 4×4 MATRIX (standard ordered dither, index 0-15):
+//    0  8  2 10
+//   12  4 14  6
+//    3 11  1  9
+//   15  7 13  5
+//
+// STARTING GREY VALUE:
+//   Randomised per match in the range [90, 200] to ensure the grey patch is
+//   immediately visible against the page background (#808080 = 128/255)
+//   and to reduce anchoring bias.
 //
 // INTERACTION:
 //   A plain grey range slider lets participants adjust the grey patch.
@@ -52,9 +63,17 @@
 
 const GammaCalibration = (function () {
 
-  const PATCH_SIZE_CSS = 220;              // CSS px: size of each patch square
-  const INITIAL_GREY   = 128;             // starting grey value (reset per match)
-  const DENSITIES      = [0.40, 0.50, 0.60]; // presented in randomised order
+  const PATCH_SIZE_CSS = 220;  // CSS px: size of each patch square
+  const DENSITIES      = [0.375, 0.50, 0.625]; // presented in randomised order
+
+  // Bayer 4×4 ordered dither matrix (values 0–15)
+  // For density d: pixel is white if BAYER_4X4[y%4][x%4] < d * 16
+  const BAYER_4X4 = [
+    [ 0,  8,  2, 10],
+    [12,  4, 14,  6],
+    [ 3, 11,  1,  9],
+    [15,  7, 13,  5]
+  ];
 
   // Centre-surround geometry
   const CS_OUTER_R_CSS = PATCH_SIZE_CSS / 2;
@@ -80,28 +99,24 @@ const GammaCalibration = (function () {
   function _fillCheckerboard(imageData, offsetX, physW, physH, density) {
     var px     = imageData.data;
     var totalW = imageData.width;
+    var thresh = density * 16;
     for (var y = 0; y < physH; y++) {
       for (var x = 0; x < physW; x++) {
         var i = (y * totalW + (offsetX + x)) * 4;
         var isWhite;
         if (density === 0.50) {
-          // Standard alternating checkerboard — finest possible spatial frequency
+          // Standard alternating checkerboard: finest pattern, above CSF cutoff
           isWhite = (x + y) % 2 === 0;
-        } else if (density === 0.40) {
-          // 5-pixel horizontal stripe period: 2 white, 3 black
-          isWhite = (x % 5) < 2;
-        } else if (density === 0.60) {
-          // 5-pixel horizontal stripe period: 3 white, 2 black
-          isWhite = (x % 5) < 3;
         } else if (density === 0.25) {
-          // 2×2 block: white only at top-left corner (legacy)
+          // Legacy 2×2 block: top-left corner only
           isWhite = (x % 2 === 0 && y % 2 === 0);
         } else if (density === 0.75) {
-          // 2×2 block: all except top-left corner (legacy)
+          // Legacy 2×2 block: all except top-left corner
           isWhite = !(x % 2 === 0 && y % 2 === 0);
         } else {
-          // General fallback: 10-pixel horizontal period
-          isWhite = (x % 10) < Math.round(density * 10);
+          // Bayer 4×4 ordered dither: no directional stripe artifact
+          // Works for any density; exact for multiples of 1/16
+          isWhite = BAYER_4X4[y % 4][x % 4] < thresh;
         }
         var val = isWhite ? 255 : 0;
         px[i] = px[i + 1] = px[i + 2] = val;
@@ -361,7 +376,10 @@ const GammaCalibration = (function () {
         function runMatch(matchIndex) {
           return new Promise(function (resolve) {
             var density   = shuffledDensities[matchIndex];
-            var greyValue = INITIAL_GREY;
+            // Randomise starting grey in [90, 200] so the patch is immediately
+            // visible against the page background (#808080 = 128) and to
+            // reduce anchoring bias across participants.
+            var greyValue = 90 + Math.floor(Math.random() * 111);
             var total     = shuffledDensities.length;
 
             display.innerHTML =
@@ -381,13 +399,15 @@ const GammaCalibration = (function () {
               labelRow +
               '<canvas id="gamma-canvas" ' +
               'style="display:block; image-rendering:pixelated; ' +
-              'image-rendering:crisp-edges; max-width:100%;">' +
+              'image-rendering:crisp-edges; max-width:100%; ' +
+              'border: 1px solid #555;">' +
               '</canvas>' +
               '</div>' +
 
-              // Slider — no readout, no labels, no value display
+              // Slider — no readout, no labels, no value display.
+              // Initial value set from the randomised greyValue.
               '<input type="range" id="gamma-slider" ' +
-              'min="0" max="255" value="' + INITIAL_GREY + '">' +
+              'min="0" max="255" value="' + greyValue + '">' +
 
               '<div style="margin-top:20px;">' +
               '<button id="gamma-confirm-btn" class="ne-continue-btn" ' +
@@ -408,7 +428,7 @@ const GammaCalibration = (function () {
             var btnConfirm = document.getElementById('gamma-confirm-btn');
 
             if (!canvas || !slider || !btnConfirm) {
-              resolve({ grey: INITIAL_GREY, density: density });
+              resolve({ grey: greyValue, density: density });
               return;
             }
 
