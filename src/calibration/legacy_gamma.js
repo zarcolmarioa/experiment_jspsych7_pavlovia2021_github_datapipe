@@ -2,34 +2,50 @@
 // src/calibration/gamma.js
 // Module 4: Gamma Calibration -- Luminance Matching Task
 //
-// Three repetitions of the standard 50% split-field luminance match.
-// Roca-Vila et al. (2013) validated this method for online use.
-// The median of three matches reduces noise from a single measurement.
-//
-// Starting grey is randomised per match ([90,200]) so the patch is
-// immediately visible against the #808080 background and reduces
-// anchoring bias across participants.
-//
 // ARRANGEMENTS (set via CONFIG.calibration.gamma_arrangement):
-//   'split_field' (default): Left half checkerboard | Right half grey
-//   'centre_surround': Centre disc vs surrounding ring
 //
-// INTERACTION:
-//   A plain grey range slider adjusts the grey patch in real time.
-//   Arrow keys adjust the slider natively; Confirm button submits.
-//   The slider track is uniformly grey with no fill progression.
+//   'split_field' (default):
+//     Left half: checkerboard  |  Right half: adjustable grey
+//     Both halves share a hard vertical border, no gap.
+//     Recommended by Roca-Vila et al. (2013, Displays) for online use.
+//
+//   'centre_surround':
+//     One patch is a filled disc in the centre of the canvas.
+//     The other is a ring (annulus) surrounding it, sharing a circular border.
+//     Orientation set via CONFIG.calibration.gamma_centre_surround_orientation:
+//       'checker_surround' (recommended): checkerboard ring, grey disc centre
+//       'grey_surround':                  grey ring, checkerboard disc centre
+//     Note: centre-surround introduces a simultaneous contrast bias when the
+//     surround is uniform grey. Using checkerboard as the surround minimises
+//     this because its spatial average is close to mid-grey.
+//
+// FOCUS STRATEGY:
+//   Uses a persistent confirm button for keyboard input (no claimViaClick).
+//   The canvas shows a "click to begin" overlay. The participant's click
+//   grants the canvas natural keyboard focus (100% reliable cross-browser).
+//   Arrow keys then adjust the grey value; Space confirms the match.
+//
+// PHYSICS:
+//   Checkerboard = 50% black + 50% white at physical pixel level.
+//   Effective physical luminance = 0.5 in linear light space.
+//   Display gamma encodes: L = (V/255)^gamma  where V is digital value.
+//   For grey patch to match: (grey/255)^gamma = 0.5
+//   Solving: gamma = log(0.5) / log(grey/255)
+//
+//   DPI: checkerboard drawn at PHYSICAL pixel resolution (times devicePixelRatio)
+//   to get true 1-physical-pixel alternation on Retina/HiDPI displays.
 //
 // OUTPUT:
-//   window._estimatedGamma   -- median gamma (float or null)
-//   jsPsych data: gamma_estimate, gamma_grey_match_1/2/3,
-//                 gamma_density_1/2/3, gamma_estimate_1/2/3,
+//   window._estimatedGamma   -- float or null
+//   window._gammaFlag        -- 'ok' | 'out_of_range' | 'invalid'
+//   jsPsych data: estimated_gamma, gamma_grey_match_value, gamma_flag,
 //                 gamma_arrangement_used
 // =============================================================================
 
 const GammaCalibration = (function () {
 
   const PATCH_SIZE_CSS  = 220;  // CSS px: size of each patch square
-  const N_MATCHES       = 3;    // number of repetitions
+  const INITIAL_GREY    = 128;  // starting grey value (0-255)
 
   // Centre-surround geometry
   // Outer radius = half of PATCH_SIZE_CSS; inner (disc) radius = 40% of that
@@ -221,41 +237,25 @@ const GammaCalibration = (function () {
     // ---- Node 2: matching task (jsPsychCallFunction owns the DOM) -----------
     //
     // INTERACTION STRATEGY:
-    // ---- Node 2: three sequential matches with slider -----------------------
+    //   All browsers: visible ← and → buttons adjust the grey value.
+    //   Chrome/Edge only: arrow keys on the confirm button also work.
+    //   Firefox: arrow keys are NOT used at all. Firefox in fullscreen mode
+    //   does not reliably fire keydown on any element after programmatic
+    //   focus, regardless of how focus is set. Visible buttons are the only
+    //   cross-browser solution that works in all tested environments.
     //
-    // The checkerboard drawing functions are identical to the working
-    // single-match version — only the interaction and loop are new.
+    //   Firefox is detected via window._browserRecommended (set in main.js).
+    //   On all browsers the visible buttons are shown. On Chrome/Edge the
+    //   confirm button also has a keydown handler for arrow keys as a shortcut.
     const taskNode = {
       type: jsPsychCallFunction,
       async: true,
       func: function (done) {
 
-        const display = jsPsych.getDisplayElement();
-        const matches = [];
+        const display   = jsPsych.getDisplayElement();
+        const isFirefox = !window._browserRecommended; // set in main.js
 
-        // Neutral slider CSS: uniform grey track, no fill progression,
-        // off-white thumb — provides no positional cue to the answer.
-        var sliderCSS =
-          '<style>' +
-          '#gamma-slider{-webkit-appearance:none;-moz-appearance:none;' +
-          'appearance:none;width:' + canvasW + 'px;max-width:100%;height:8px;' +
-          'background:#666;border-radius:4px;outline:none;cursor:ew-resize;' +
-          'border:none;display:block;margin:18px auto 0 auto;}' +
-          '#gamma-slider::-webkit-slider-thumb{-webkit-appearance:none;' +
-          'appearance:none;width:26px;height:26px;border-radius:50%;' +
-          'background:#f0ede8;border:2px solid #333;cursor:ew-resize;' +
-          'box-shadow:none;}' +
-          '#gamma-slider::-webkit-slider-runnable-track{background:#666;' +
-          'height:8px;border-radius:4px;}' +
-          '#gamma-slider::-moz-range-thumb{width:26px;height:26px;' +
-          'border-radius:50%;background:#f0ede8;border:2px solid #333;' +
-          'cursor:ew-resize;box-shadow:none;}' +
-          '#gamma-slider::-moz-range-track{background:#666;height:8px;' +
-          'border-radius:4px;}' +
-          '#gamma-slider::-moz-range-progress{background:#666;}' +
-          '</style>';
-
-        // Build label row HTML (identical across matches)
+        // Build label row
         let labelRow = '';
         if (arrangement === 'split_field') {
           labelRow =
@@ -277,163 +277,189 @@ const GammaCalibration = (function () {
             '</div>';
         }
 
-        // Run one match; resolves to { grey, density }
-        function runMatch(matchIndex) {
-          return new Promise(function (resolve) {
-            // Randomise start: immediately visible against #808080 background
-            var greyValue = 90 + Math.floor(Math.random() * 111);
+        // Arrow button style -- compact, square
+        var arrowBtnStyle =
+          'width:52px; height:52px; font-size:1.4rem; ' +
+          'background:#444; color:#fff; border:2px solid #888; ' +
+          'border-radius:4px; cursor:pointer; ' +
+          'font-family:Georgia,serif; line-height:1; ' +
+          'display:inline-flex; align-items:center; justify-content:center;';
 
-            display.innerHTML =
-              sliderCSS +
-              '<div style="text-align:center; padding:20px 0;">' +
+        var keyHint = isFirefox
+          ? 'Click \u2190 \u2192 to adjust \u00b7 Click Confirm when done'
+          : '\u2190 \u2192 keys or buttons to adjust \u00b7 Space or Confirm button when done';
 
-              '<p style="color:#999; font-family:monospace; font-size:0.8rem; ' +
-              'margin-bottom:6px;">Match ' + (matchIndex + 1) +
-              ' of ' + N_MATCHES + '</p>' +
+        display.innerHTML =
+          '<div style="text-align:center; padding:20px 0;">' +
 
-              '<p style="color:#ccc; font-family:monospace; font-size:0.85rem; ' +
-              'margin-bottom:20px; max-width:600px; ' +
-              'margin-left:auto; margin-right:auto;">' +
-              INSTRUCTIONS.calibration_gamma_prompt +
-              '</p>' +
+          '<p style="color:#ccc; font-family:monospace; font-size:0.85rem; ' +
+          'margin-bottom:20px; max-width:600px; ' +
+          'margin-left:auto; margin-right:auto;">' +
+          INSTRUCTIONS.calibration_gamma_prompt +
+          '</p>' +
 
-              '<div style="display:inline-block;">' +
-              labelRow +
-              '<canvas id="gamma-canvas" ' +
-              'style="display:block; image-rendering:pixelated; ' +
-              'image-rendering:crisp-edges; max-width:100%;">' +
-              '</canvas>' +
-              '</div>' +
+          '<div style="display:inline-block;">' +
+          labelRow +
+          '<canvas id="gamma-canvas" ' +
+          'style="display:block; image-rendering:pixelated; ' +
+          'image-rendering:crisp-edges; max-width:100%;">' +
+          '</canvas>' +
+          '</div>' +
 
-              '<input type="range" id="gamma-slider" ' +
-              'min="0" max="255" value="' + greyValue + '">' +
+          '<p id="gamma-readout" ' +
+          'style="color:#888; margin-top:14px; font-size:0.75rem; ' +
+          'font-family:monospace;">' +
+          'Grey value: ' + INITIAL_GREY +
+          '</p>' +
 
-              '<div style="margin-top:20px;">' +
-              '<button id="gamma-confirm-btn" class="ne-continue-btn" ' +
-              'style="min-width:160px;">' +
-              INSTRUCTIONS.calibration_gamma_confirm_button +
-              '</button>' +
-              '</div>' +
+          // Control row: ← button  |  Confirm button  |  → button
+          '<div style="display:flex; align-items:center; justify-content:center; ' +
+          'gap:16px; margin-top:16px;">' +
 
-              '<p style="color:#555; font-size:0.75rem; margin-top:10px;">' +
-              'Drag the slider or use \u2190 \u2192 keys to adjust \u00b7 ' +
-              'Click Confirm when done' +
-              '</p>' +
+          '<button id="gamma-left-btn" style="' + arrowBtnStyle + '">' +
+          '\u2190' +
+          '</button>' +
 
-              '</div>';
+          '<button id="gamma-confirm-btn" class="ne-continue-btn" ' +
+          'style="min-width:160px;">' +
+          INSTRUCTIONS.calibration_gamma_confirm_button +
+          '</button>' +
 
-            const canvas     = document.getElementById('gamma-canvas');
-            const slider     = document.getElementById('gamma-slider');
-            const btnConfirm = document.getElementById('gamma-confirm-btn');
+          '<button id="gamma-right-btn" style="' + arrowBtnStyle + '">' +
+          '\u2192' +
+          '</button>' +
 
-            if (!canvas || !slider || !btnConfirm) {
-              resolve({ grey: greyValue, density: 0.50 });
-              return;
-            }
+          '</div>' +
 
-            _draw(canvas, greyValue);
+          '<p style="color:#555; font-size:0.75rem; margin-top:10px;">' +
+          keyHint +
+          '</p>' +
 
-            function onSliderInput() {
-              greyValue = parseInt(slider.value, 10);
-              _draw(canvas, greyValue);
-            }
+          '</div>';
 
-            function onConfirm() {
-              slider.removeEventListener('input', onSliderInput);
-              slider.removeEventListener('keydown', onSliderKey);
-              btnConfirm.removeEventListener('click', onConfirm);
-              resolve({ grey: greyValue, density: 0.50 });
-            }
+        const canvas     = document.getElementById('gamma-canvas');
+        const btnLeft    = document.getElementById('gamma-left-btn');
+        const btnRight   = document.getElementById('gamma-right-btn');
+        const btnConfirm = document.getElementById('gamma-confirm-btn');
+        const readout    = document.getElementById('gamma-readout');
 
-            function onSliderKey(e) {
-              if (e.code === 'Space' || e.key === ' ') {
-                e.preventDefault();
-                onConfirm();
-              }
-            }
-
-            slider.addEventListener('input', onSliderInput);
-            slider.addEventListener('keydown', onSliderKey);
-            btnConfirm.addEventListener('click', onConfirm, { once: true });
-
-            setTimeout(function () { slider.focus(); }, 0);
-          });
+        if (!canvas || !btnConfirm) {
+          window._gammaGreyMatch = INITIAL_GREY;
+          display.innerHTML = '';
+          done();
+          return;
         }
 
-        // Run all matches sequentially
-        (async function () {
-          for (var i = 0; i < N_MATCHES; i++) {
-            var result = await runMatch(i);
-            matches.push(result);
-          }
-          window._gammaMatches     = matches;
+        let greyValue = INITIAL_GREY;
+        _draw(canvas, greyValue);
+
+        function adjustGrey(delta) {
+          greyValue = Math.max(0, Math.min(255, greyValue + delta));
+          _draw(canvas, greyValue);
+          if (readout) readout.textContent = 'Grey value: ' + greyValue;
+        }
+
+        function confirm() {
+          btnLeft.removeEventListener('click', onLeft);
+          btnRight.removeEventListener('click', onRight);
+          btnConfirm.removeEventListener('click', onConfirm);
+          btnConfirm.removeEventListener('keydown', onKey);
+          window._gammaGreyMatch   = greyValue;
           window._gammaArrangement = arrangement;
           display.innerHTML = '';
           done();
-        })();
+        }
+
+        // Button click handlers (work on ALL browsers)
+        function onLeft()    { adjustGrey(-1); }
+        function onRight()   { adjustGrey(+1); }
+        function onConfirm() { confirm(); }
+
+        btnLeft.addEventListener('click',  onLeft);
+        btnRight.addEventListener('click', onRight);
+        btnConfirm.addEventListener('click', onConfirm, { once: true });
+
+        // Keyboard handler on confirm button (Chrome/Edge only shortcut)
+        // Firefox: we skip this and rely entirely on button clicks
+        function onKey(e) {
+          if (e.code === 'ArrowLeft')                      { e.preventDefault(); adjustGrey(-1); }
+          else if (e.code === 'ArrowRight')                { e.preventDefault(); adjustGrey(+1); }
+          else if (e.code === 'Space' || e.key === ' ')    { e.preventDefault(); btnConfirm.click(); }
+        }
+
+        if (!isFirefox) {
+          btnConfirm.addEventListener('keydown', onKey);
+          setTimeout(function () { btnConfirm.focus(); }, 0);
+        }
       },
 
       data: { calibration_step: 'gamma_task' },
 
       on_finish: function (data) {
-        data.gamma_matches     = window._gammaMatches;
+        data.gamma_grey_match  = window._gammaGreyMatch;
         data.gamma_arrangement = window._gammaArrangement;
       },
     };
 
-    // ---- Node 3: compute median gamma, store all three matches -------------
+    // ---- Node 3: compute gamma, store, incremental save --------------------
     const storeNode = {
       type: jsPsychCallFunction,
       func: function () {
-        var matches = window._gammaMatches || [];
+        const greyMatch = (window._gammaGreyMatch !== undefined)
+          ? window._gammaGreyMatch
+          : INITIAL_GREY;
 
-        var gammaValues = matches.map(function (m) {
-          return _computeGamma(m.grey);
-        });
+        const gamma   = _computeGamma(greyMatch);
+        window._estimatedGamma = gamma;
 
-        // Median
-        var valid = gammaValues.filter(function (v) { return v !== null; });
-        var finalGamma = null;
-        if (valid.length > 0) {
-          var s = valid.slice().sort(function (a, b) { return a - b; });
-          var mid = Math.floor(s.length / 2);
-          finalGamma = s.length % 2 !== 0 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+        const range   = CONFIG.calibration.gamma_exclusion_range;
+        let gammaFlag = 'ok';
+        if (gamma === null) {
+          gammaFlag = 'invalid';
+        } else if (range && (gamma < range[0] || gamma > range[1])) {
+          gammaFlag = 'out_of_range';
         }
-        window._estimatedGamma = finalGamma;
+        window._gammaFlag = gammaFlag;
 
-        var props = {
-          gamma_estimate:         finalGamma !== null
-                                    ? parseFloat(finalGamma.toFixed(3))
-                                    : null,
-          gamma_arrangement_used: window._gammaArrangement || 'unknown',
-        };
+        console.log(
+          '[Gamma] arrangement: ' + (window._gammaArrangement || 'unknown') +
+          '  grey match: ' + greyMatch +
+          '/255  gamma: ' + (gamma ? gamma.toFixed(3) : 'null') +
+          '  flag: ' + gammaFlag
+        );
 
-        matches.forEach(function (m, i) {
-          var n = i + 1;
-          var g = _computeGamma(m.grey);
-          props['gamma_grey_match_' + n] = m.grey;
-          props['gamma_density_'   + n]  = 0.50;
-          props['gamma_estimate_'  + n]  = g !== null
-                                             ? parseFloat(g.toFixed(3))
-                                             : null;
+        jsPsych.data.addProperties({
+          estimated_gamma:          gamma !== null ? parseFloat(gamma.toFixed(3)) : null,
+          gamma_grey_match_value:   greyMatch,
+          gamma_flag:               gammaFlag,
+          gamma_arrangement_used:   window._gammaArrangement || 'unknown',
         });
 
-        jsPsych.data.addProperties(props);
-
-        matches.forEach(function (m, i) {
-          var g = _computeGamma(m.grey);
-          console.log(
-            '[Gamma] match ' + (i + 1) + ': grey=' + m.grey +
-            '/255  gamma=' + (g !== null ? g.toFixed(3) : 'null')
-          );
-        });
-        console.log('[Gamma] final (median): ' +
-          (finalGamma !== null ? finalGamma.toFixed(3) : 'null'));
         console.log('[Platform] Calibration step complete: calibration_gamma');
       },
     };
 
-    return [instructionNode, taskNode, storeNode];
+    // ---- Node 4: out-of-range warning (button advance) ---------------------
+    const warningNode = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: function () {
+        if (window._gammaFlag === 'ok') return '<div style="display:none;"></div>';
+        return '<div class="ne-warning">' +
+          INSTRUCTIONS.calibration_gamma_warning + '</div>';
+      },
+      choices: function () {
+        return window._gammaFlag === 'ok'
+          ? ['_skip_']
+          : [INSTRUCTIONS.button_continue];
+      },
+      button_html: '<button class="ne-continue-btn">%choice%</button>',
+      trial_duration: function () {
+        return window._gammaFlag === 'ok' ? 0 : null;
+      },
+      data: { calibration_step: 'gamma_warning' },
+    };
+
+    return [instructionNode, taskNode, storeNode, warningNode];
   }
 
   return { getNodes };
