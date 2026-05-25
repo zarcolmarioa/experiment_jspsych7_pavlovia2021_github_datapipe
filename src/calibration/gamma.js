@@ -3,52 +3,37 @@
 // Module 4: Gamma Calibration -- Luminance Matching Task
 //
 // PROCEDURE:
-//   Three sequential luminance matches are collected, each using a
-//   checkerboard of a different density (proportion of white pixels).
-//   The densities used are 0.375, 0.50, and 0.625 — values that the
-//   Bayer 4×4 dither matrix can achieve exactly with no rounding error.
-//   They are presented in a RANDOMISED ORDER that differs across participants.
-//
-//   Using three different densities:
-//     (a) Reduces noise: the final gamma is the median of three estimates.
-//     (b) Probes gamma at different luminance operating points: if the
-//         display follows a perfect power law, all three estimates agree;
-//         spread indicates non-linearity.
+//   Three sequential luminance matches are collected, each using a pattern
+//   of a different density (proportion of white pixels): 0.40, 0.50, 0.60.
+//   Presented in a RANDOMISED ORDER that differs across participants.
 //
 // GAMMA FORMULA (generalised for arbitrary density):
-//   Checkerboard at density d has average luminance = d in linear space.
+//   Pattern at density d has average luminance = d in linear space.
 //   For the grey patch to match: (grey/255)^gamma = d
 //   Solving: gamma = log(d) / log(grey/255)
-//   At d = 0.5 this reduces to the standard formula.
 //
-// CHECKERBOARD PATTERNS (drawn at physical pixel resolution × devicePixelRatio):
-//   density 0.50:  standard alternating checkerboard  (x+y) % 2 === 0
-//                  finest pattern — above CSF cutoff at normal viewing distance
-//   density 0.375: Bayer 4×4 ordered dither, threshold < 6/16
-//                  6/16 = 0.375 exactly — no directional stripe artifact
-//   density 0.625: Bayer 4×4 ordered dither, threshold < 10/16
-//                  10/16 = 0.625 exactly — no directional stripe artifact
-//   Legacy (0.25, 0.75): 2×2 block patterns retained for backward compatibility
+// PATTERNS (drawn at physical pixel resolution × devicePixelRatio):
+//   density 0.50: standard alternating checkerboard  (x+y) % 2 === 0
+//                 finest possible pattern — above CSF cutoff at any viewing
+//                 distance where the task is plausible
+//   all other densities: deterministic hash-based noise dither
+//                 Each pixel is independently white or black based on a
+//                 murmur3-style hash of its (x,y) position.  This produces
+//                 a visually noise-like pattern with the correct average
+//                 density and NO periodic structure — no stripes, no grid.
 //
-// BAYER 4×4 MATRIX (standard ordered dither, index 0-15):
-//    0  8  2 10
-//   12  4 14  6
-//    3 11  1  9
-//   15  7 13  5
+// INTERACTION:
+//   A plain grey range slider lets participants adjust the grey patch.
+//   The slider track is uniformly grey with no fill progression.
+//   Arrow keys adjust the slider natively.  A Confirm button submits.
 //
 // STARTING GREY VALUE:
 //   Randomised per match in the range [90, 200] to ensure the grey patch is
 //   immediately visible against the page background (#808080 = 128/255)
 //   and to reduce anchoring bias.
 //
-// INTERACTION:
-//   A plain grey range slider lets participants adjust the grey patch.
-//   The slider track is uniformly grey with no fill progression so it
-//   provides no positional cue to the correct answer.  Arrow keys also
-//   adjust the slider natively.  A Confirm button submits the match.
-//
 // ARRANGEMENTS (set via CONFIG.calibration.gamma_arrangement):
-//   'split_field' (default): Left half checkerboard | Right half grey
+//   'split_field' (default): Left half pattern | Right half grey
 //   'centre_surround': Centre disc vs surrounding ring
 //
 // OUTPUT:
@@ -56,7 +41,7 @@
 //   jsPsych data properties:
 //     gamma_estimate          -- median gamma across all three matches
 //     gamma_grey_match_1/2/3  -- grey value confirmed for each match
-//     gamma_density_1/2/3     -- checkerboard density for each match
+//     gamma_density_1/2/3     -- pattern density for each match
 //     gamma_estimate_1/2/3    -- individual gamma for each match
 //     gamma_arrangement_used  -- arrangement name used
 // =============================================================================
@@ -64,16 +49,7 @@
 const GammaCalibration = (function () {
 
   const PATCH_SIZE_CSS = 220;  // CSS px: size of each patch square
-  const DENSITIES      = [0.375, 0.50, 0.625]; // presented in randomised order
-
-  // Bayer 4×4 ordered dither matrix (values 0–15)
-  // For density d: pixel is white if BAYER_4X4[y%4][x%4] < d * 16
-  const BAYER_4X4 = [
-    [ 0,  8,  2, 10],
-    [12,  4, 14,  6],
-    [ 3, 11,  1,  9],
-    [15,  7, 13,  5]
-  ];
+  const DENSITIES      = [0.40, 0.50, 0.60]; // presented in randomised order
 
   // Centre-surround geometry
   const CS_OUTER_R_CSS = PATCH_SIZE_CSS / 2;
@@ -91,33 +67,32 @@ const GammaCalibration = (function () {
   }
 
   // ---------------------------------------------------------------------------
-  // DRAWING: fill checkerboard into an ImageData buffer at physical resolution.
-  // density: proportion of white pixels (0–1)
-  // offsetX: left edge of the region in the buffer (physical px)
-  // physW, physH: dimensions of the region in physical px
+  // DRAWING: per-pixel deterministic hash (murmur3 finalizer style)
+  // Returns a value in [0, 1) for each (x, y) position.
+  // Uses Math.imul for exact 32-bit integer multiplication in JavaScript.
+  // No periodic structure: each pixel is independently determined.
+  // ---------------------------------------------------------------------------
+  function _pixelHash(x, y) {
+    var h = (Math.imul(x, 374761393) + Math.imul(y, 1103515245) + 0x1234abcd) >>> 0;
+    h = Math.imul(h ^ (h >>> 16), 0x85ebca6b) >>> 0;
+    h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
+    return (h ^ (h >>> 16)) >>> 0 / 4294967296;
+  }
+
+  // ---------------------------------------------------------------------------
+  // DRAWING: fill pattern into an ImageData buffer at physical resolution.
+  // density 0.50: standard alternating checkerboard (exact, finest frequency)
+  // all others:   hash-based noise dither (correct average density, no stripes)
   // ---------------------------------------------------------------------------
   function _fillCheckerboard(imageData, offsetX, physW, physH, density) {
     var px     = imageData.data;
     var totalW = imageData.width;
-    var thresh = density * 16;
     for (var y = 0; y < physH; y++) {
       for (var x = 0; x < physW; x++) {
         var i = (y * totalW + (offsetX + x)) * 4;
-        var isWhite;
-        if (density === 0.50) {
-          // Standard alternating checkerboard: finest pattern, above CSF cutoff
-          isWhite = (x + y) % 2 === 0;
-        } else if (density === 0.25) {
-          // Legacy 2×2 block: top-left corner only
-          isWhite = (x % 2 === 0 && y % 2 === 0);
-        } else if (density === 0.75) {
-          // Legacy 2×2 block: all except top-left corner
-          isWhite = !(x % 2 === 0 && y % 2 === 0);
-        } else {
-          // Bayer 4×4 ordered dither: no directional stripe artifact
-          // Works for any density; exact for multiples of 1/16
-          isWhite = BAYER_4X4[y % 4][x % 4] < thresh;
-        }
+        var isWhite = (density === 0.50)
+          ? (x + y) % 2 === 0
+          : _pixelHash(x, y) < density;
         var val = isWhite ? 255 : 0;
         px[i] = px[i + 1] = px[i + 2] = val;
         px[i + 3] = 255;
