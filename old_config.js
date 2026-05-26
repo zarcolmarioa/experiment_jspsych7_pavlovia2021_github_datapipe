@@ -76,10 +76,6 @@ const CONFIG = {
     contrast_screen: true,   // Hidden-digit contrast check (attention gate)
     ambient_light:   true,   // Single self-report item about room lighting
 
-    // Gamma: exclude participant if estimated gamma deviates beyond this range.
-    // Set to null to log but never exclude.
-    gamma_exclusion_range: [1.5, 3.0],  // [min, max] acceptable gamma
-
     // Gamma calibration visual arrangement.
     // Options:
     //   'split_field'     -- checkerboard LEFT | grey patch RIGHT, shared border

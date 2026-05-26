@@ -185,10 +185,7 @@ if (CONFIG.calibration.fullscreen) {
   timeline.push(fullscreen_trial);
 }
 
-// ---- 2. Browser type check ------------------------------------------------
-// Uses a custom user-agent approach for precise control over which browsers
-// are flagged. Kept separate from the refresh rate measurement below so that
-// browser-type logic is not affected by changes to jsPsychBrowserCheck.
+// ---- 2. Browser check -----------------------------------------------------
 var browser_check_fn = {
   type: jsPsychCallFunction,
   func: function () {
@@ -219,21 +216,6 @@ var browser_warning = {
 };
 timeline.push(browser_warning);
 
-// ---- 2b. Refresh rate measurement ----------------------------------------
-// Uses jsPsychBrowserCheck with the vsync_rate feature, which internally
-// measures the display refresh rate via requestAnimationFrame (~500 ms).
-// Runs silently (no participant-facing UI) since no inclusion_function is set.
-// Result is stored automatically in the trial data as vsync_rate (Hz).
-var refresh_rate_check = {
-  type: jsPsychBrowserCheck,
-  features: ['vsync_rate'],
-  on_finish: function (data) {
-    console.log('[BrowserCheck] Refresh rate: ' +
-      (data.vsync_rate !== null ? data.vsync_rate + ' Hz' : 'unknown'));
-  },
-};
-timeline.push(refresh_rate_check);
-
 // ---- 3. Welcome -----------------------------------------------------------
 var welcome = {
   type: jsPsychHtmlButtonResponse,
@@ -246,11 +228,13 @@ timeline.push(welcome);
 
 // ---- 4. Calibration intro -------------------------------------------------
 var anyCalibration =
+  CONFIG.calibration.brightness_confirmation ||
   CONFIG.calibration.device_screen ||
   CONFIG.calibration.resize_card   ||
   CONFIG.calibration.blind_spot    ||
   CONFIG.calibration.gamma         ||
-  CONFIG.calibration.contrast_screen;
+  CONFIG.calibration.contrast_screen ||
+  CONFIG.calibration.color_rendering;
 
 if (anyCalibration) {
   var calibration_intro = {
@@ -265,7 +249,12 @@ if (anyCalibration) {
   timeline.push(calibration_intro);
 }
 
-// ---- 5a. Device & screen check --------------------------------------------
+// ---- 5a. Brightness confirmation ------------------------------------------
+if (CONFIG.calibration.brightness_confirmation) {
+  timeline.push.apply(timeline, BrightnessConfirmation.getNodes(jsPsych));
+}
+
+// ---- 5b. Device & screen check --------------------------------------------
 if (CONFIG.calibration.device_screen) {
   timeline.push.apply(timeline, DeviceScreenCalibration.getNodes(jsPsych));
 } else {
@@ -302,6 +291,11 @@ if (CONFIG.calibration.gamma) {
 // ---- 5e. Contrast screen + ambient light ----------------------------------
 if (CONFIG.calibration.contrast_screen) {
   timeline.push.apply(timeline, ContrastScreenCalibration.getNodes(jsPsych));
+}
+
+// ---- 5f. Colour rendering check -------------------------------------------
+if (CONFIG.calibration.color_rendering) {
+  timeline.push.apply(timeline, ColorRenderingCalibration.getNodes(jsPsych));
 }
 
 // ---- 6. Stimulus evaluation (pre-experimental, separate participant group) -

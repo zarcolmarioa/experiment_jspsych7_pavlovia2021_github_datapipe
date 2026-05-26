@@ -363,6 +363,38 @@ _STRINGS.en = {
        Chrome or Edge.</p>
   `,
 
+  // Brightness confirmation (shown before calibration starts)
+  calibration_brightness_intro: `
+    <p>For accurate measurements, your screen brightness must be set to
+       <strong>maximum</strong> throughout the entire session.</p>
+    <p>Please increase your screen brightness to the highest setting now.
+       On most computers you can do this using the brightness keys on
+       your keyboard (usually F1/F2 or a sun icon key), or via your
+       operating system display settings.</p>
+    <p>Once your brightness is at maximum, please tick the box below
+       and click <strong>Continue</strong>.</p>
+  `,
+
+  // Label shown above the checkbox in the brightness step
+  calibration_brightness_checkbox: `
+    Please confirm that your screen brightness is set to maximum before continuing.
+  `,
+
+  // Colour rendering check — instruction screen
+  calibration_color_intro: `
+    <p>We will now show you <strong>two quick checks</strong> to assess
+       whether your display renders colour correctly.</p>
+    <p>Each check shows a grey square with a faint number inside it.
+       The number is drawn in a slightly different colour from the background.
+       Look carefully and type the number you see.</p>
+    <p>You have <strong>two attempts</strong> per check. If you cannot
+       identify the number, the next check will begin automatically.</p>
+  `,
+
+  // Prompt shown during each colour check
+  calibration_color_prompt: `What number do you see?`,
+
+  // Existing strings below
   device_excluded: `
     <h2>Incompatible Device</h2>
     <p>This study requires a <strong>desktop or laptop computer</strong>

@@ -143,23 +143,30 @@ _STRINGS.en = {
   `,
 
   calibration_contrast_intro: `
-    <p>Almost done! On the next screen, you will see a grey square with a
+    <p>Almost done! We will now show you <strong>three checks</strong>, one at
+       a time. Each check shows a grey square with a
        <strong>faint number</strong> hidden inside it.</p>
-    <p>The number is slightly lighter than the background -- look carefully.</p>
-    <p>Click the white box to place your cursor, type the number you see,
-       and click <strong>Submit</strong>.</p>
+    <p>The number is slightly lighter than the background — look carefully.
+       You have <strong>two attempts</strong> per check. If you cannot
+       identify the number on either attempt, the next check will begin
+       automatically.</p>
+    <p>Type the number you see and click <strong>Submit</strong>.</p>
   `,
 
   calibration_ambient_question: `
-    How would you describe the <strong>lighting</strong> in the room
-    you are in right now?
+    <p>How would you describe the lighting in the room you are in right now?</p>
+    <ul style="text-align:left; display:inline-block; margin-top:8px;">
+      <li><strong>A.</strong> My screen is the brightest thing in the room
+          (lights off or very dim)</li>
+      <li style="margin-top:8px;"><strong>B.</strong> Normal indoor lighting
+          &mdash; ceiling lights or daylight from a window, but no direct
+          sunlight on my screen</li>
+      <li style="margin-top:8px;"><strong>C.</strong> Direct sunlight or very
+          bright artificial light is hitting my screen</li>
+    </ul>
   `,
 
-  calibration_ambient_options: [
-    `Dark (night-time or blackout curtains)`,
-    `Dim (some ambient light)`,
-    `Bright (daylight or strong room lighting)`,
-  ],
+  calibration_ambient_options: [`A`, `B`, `C`],
 
   // ---------------------------------------------------------------------------
   // NE TASK

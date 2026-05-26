@@ -4,7 +4,7 @@
     <title>Noise Estimation Task</title>
     <meta charset="UTF-8">
 
-    <!-- jsPsych core and plugins from local vendors directory -->
+    <!-- jsPsych core and plugins from Pavlovia's lib/vendors directory -->
     <script src="lib/vendors/jspsych-7.1.2/jspsych.js"></script>
     <script src="lib/vendors/jspsych-7.1.2/plugin-fullscreen.js"></script>
     <script src="lib/vendors/jspsych-7.1.2/plugin-browser-check.js"></script>
@@ -17,14 +17,17 @@
     <script src="lib/vendors/jspsych-7.1.2/plugin-call-function.js"></script>
     <link rel="stylesheet" href="lib/vendors/jspsych-7.1.2/jspsych.css">
 
+    <!-- jQuery (required by jspsych-7-pavlovia-2021.12.js) -->
+    <script type="text/javascript" src="lib/vendors/jquery-2.2.0.min.js"></script>
+
+    <!-- Pavlovia jsPsych plugin (2021.12 -- must load AFTER jspsych and jQuery) -->
+    <script type="text/javascript" src="jspsych-7-pavlovia-2021.12.js"></script>
+
     <!-- DataPipe plugin for saving to OSF via pipe.jspsych.org          -->
-    <!-- Active for GitHub deployment. Safe to leave loaded on Pavlovia  -->
-    <!-- (unused plugin causes no harm).                                  -->
     <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe@0.4/dist/index.browser.min.js"></script>
 
     <!-- ================================================================ -->
     <!-- PAVLOVIA-ONLY SCRIPTS                                            -->
-    <!-- Active when deploying to Pavlovia (platform.online = true).     -->
     <!-- Comment out both lines below when deploying to GitHub Pages.    -->
     <!-- Uncomment both lines when deploying to Pavlovia.                -->
     <!-- ================================================================ -->
@@ -40,11 +43,13 @@
     <script src="instructions.js"></script>
 
     <!-- Calibration modules -->
+    <script src="src/calibration/brightness-confirmation.js"></script>
     <script src="src/calibration/device-screen.js"></script>
     <script src="src/calibration/resize-card.js"></script>
     <script src="src/calibration/blind-spot.js"></script>
     <script src="src/calibration/gamma.js"></script>
     <script src="src/calibration/contrast-screen.js"></script>
+    <script src="src/calibration/color-rendering.js"></script>
 
     <!-- Task modules -->
     <script src="src/tasks/stimulus-evaluation.js"></script>

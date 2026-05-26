@@ -68,13 +68,15 @@ const CONFIG = {
   // Set any item to false to skip it entirely (useful during development).
   // ---------------------------------------------------------------------------
   calibration: {
-    fullscreen:      true,   // Enter fullscreen before anything else
-    device_screen:   true,   // Log pixel ratio, screen size, user agent
-    resize_card:     true,   // Physical screen size via credit card method
-    blind_spot:      true,   // Viewing distance via blind spot method
-    gamma:           true,   // Gamma estimation via alternating-pixel matching
-    contrast_screen: true,   // Hidden-digit contrast check (attention gate)
-    ambient_light:   true,   // Single self-report item about room lighting
+    fullscreen:              true,   // Enter fullscreen before anything else
+    brightness_confirmation: true,   // Ask participant to set brightness to maximum
+    device_screen:           true,   // Log pixel ratio, screen size, user agent
+    resize_card:             true,   // Physical screen size via credit card method
+    blind_spot:              true,   // Viewing distance via blind spot method
+    gamma:                   true,   // Gamma estimation via luminance matching (3 repetitions)
+    contrast_screen:         true,   // Hidden-digit contrast check
+    color_rendering:         true,   // Colour rendering check (red-green, yellow-blue)
+    ambient_light:           true,   // Single self-report item about room lighting
 
     // Gamma calibration visual arrangement.
     // Options:
