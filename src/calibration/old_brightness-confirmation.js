@@ -29,21 +29,22 @@ const BrightnessConfirmation = (function () {
 
           INSTRUCTIONS.calibration_brightness_intro +
 
-          '<div style="margin:28px auto; max-width:480px; text-align:center; ' +
-          'background:rgba(255,255,255,0.05); border:1px solid #555; ' +
-          'border-radius:6px; padding:18px 24px;">' +
+          '<div style="margin:28px auto; max-width:520px;">' +
 
-          '<p style="margin:0 0 16px 0; color:#ccc; font-size:0.95rem;">' +
+          '<p style="margin:0 0 16px 0; color:#ccc; font-size:0.95rem; text-align:center;">' +
           INSTRUCTIONS.calibration_brightness_checkbox +
           '</p>' +
 
-          '<label style="display:inline-flex; align-items:center; gap:14px; ' +
-          'cursor:pointer; color:#f0ede8; font-size:1rem;">' +
+          '<div style="display:inline-block; position:relative; ' +
+          'left:50%; transform:translateX(-50%); white-space:nowrap; ' +
+          'margin-top:8px;">' +
           '<input type="checkbox" id="brightness-checkbox" ' +
-          'style="width:22px; height:22px; cursor:pointer; ' +
-          'accent-color:#f0ede8; flex-shrink:0;">' +
-          '<span>I have set my screen brightness to maximum</span>' +
-          '</label>' +
+          'style="width:22px; height:22px; cursor:pointer; vertical-align:middle; ' +
+          'accent-color:#555; margin-right:10px;">' +
+          '<span style="font-size:1rem; vertical-align:middle; cursor:pointer;">' +
+          // 'I have set my screen brightness to maximum' +
+          '</span>' +
+          '</div>' +
 
           '</div>' +
 
