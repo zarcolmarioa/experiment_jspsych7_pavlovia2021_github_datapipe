@@ -37,7 +37,7 @@ const BrightnessConfirmation = (function () {
           INSTRUCTIONS.calibration_brightness_checkbox +
           '</p>' +
 
-          '<label style="display:inline-flex; align-items:center; gap:14px;' +
+          '<label style="display:inline-flex; align-items:center; gap:14px; ' +
           'cursor:pointer; color:#f0ede8; font-size:1rem;">' +
           '<input type="checkbox" id="brightness-checkbox" ' +
           'style="width:22px; height:22px; cursor:pointer; ' +
