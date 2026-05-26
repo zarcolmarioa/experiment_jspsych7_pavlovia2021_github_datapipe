@@ -42,7 +42,7 @@ const BrightnessConfirmation = (function () {
           'style="width:22px; height:22px; cursor:pointer; vertical-align:middle; ' +
           'accent-color:#555; margin-right:10px;">' +
           '<span style="font-size:1rem; vertical-align:middle; cursor:pointer;">' +
-          'I have set my screen brightness to maximum' +
+          // 'I have set my screen brightness to maximum' +
           '</span>' +
           '</div>' +
 
