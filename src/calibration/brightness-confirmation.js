@@ -33,11 +33,11 @@ const BrightnessConfirmation = (function () {
           'background:rgba(255,255,255,0.05); border:1px solid #555; ' +
           'border-radius:6px; padding:18px 24px;">' +
 
-          '<p style="margin:0 0 16px 0; color:#f0ede8; font-size:0.95rem;">' +
+          '<p style="margin:0 0 16px 0; color:#ffffff; font-size:0.95rem;">' +
           INSTRUCTIONS.calibration_brightness_checkbox +
           '</p>' +
 
-          '<label style="display:flex; align-items:center; gap:14px; justify-content:center;' +
+          '<label style="display:flex; align-items:center; justify-content:center; gap:14px;' +
           'cursor:pointer; color:#f0ede8; font-size:1rem;">' +
           '<input type="checkbox" id="brightness-checkbox" ' +
           'style="width:22px; height:22px; cursor:pointer; ' +
