@@ -38,18 +38,15 @@ const NETask = (function () {
   }
 
   // ---------------------------------------------------------------------------
-  // Internal: generate the full trial list from variantConfig + CONFIG.stimuli
+  // Internal: generate the full trial list from CONFIG.stimuli
   // ---------------------------------------------------------------------------
-  function _buildTrialList(variantConfig) {
+  function _buildTrialList() {
     const trialList = [];
-    const stimList      = variantConfig.stimuli_list  || CONFIG.stimuli.list;
-    const noiseLevels   = variantConfig.comparison_levels;
-    const standardNoise = variantConfig.standard_level;
-    const reps          = variantConfig.repetitions;
-    const singleExposure= variantConfig.single_exposure;
-    const nTrials       = (variantConfig.n_trials !== undefined && variantConfig.n_trials !== null)
-                            ? variantConfig.n_trials
-                            : CONFIG.stimuli.n_trials;
+    const stimList  = CONFIG.stimuli.list;
+    const noiseLevels = CONFIG.noise.comparison_levels;
+    const standardNoise = CONFIG.noise.standard_level;
+    const reps = CONFIG.stimuli.repetitions;
+    const singleExposure = CONFIG.stimuli.single_exposure;
 
     for (const stim of stimList) {
       if (singleExposure) {
@@ -89,18 +86,18 @@ const NETask = (function () {
     }
 
     // Apply trial cap if set (null = no cap)
-    return (nTrials !== null && nTrials !== undefined) ? trialList.slice(0, nTrials) : trialList;
+    const cap = CONFIG.stimuli.n_trials;
+    return (cap !== null && cap !== undefined) ? trialList.slice(0, cap) : trialList;
   }
 
   // ---------------------------------------------------------------------------
   // Internal: collect all stimulus filenames for preloading
   // ---------------------------------------------------------------------------
-  function _getAllImagePaths(variantConfig) {
-    const paths    = new Set();
-    const stimList = variantConfig.stimuli_list || CONFIG.stimuli.list;
-    for (const stim of stimList) {
-      paths.add(_standardFilename(stim.id, variantConfig.standard_level));
-      for (const noise of variantConfig.comparison_levels) {
+  function _getAllImagePaths() {
+    const paths = new Set();
+    for (const stim of CONFIG.stimuli.list) {
+      paths.add(_standardFilename(stim.id, CONFIG.noise.standard_level));
+      for (const noise of CONFIG.noise.comparison_levels) {
         paths.add(_comparisonFilename(stim.id, stim.valence, noise));
       }
     }
@@ -492,15 +489,12 @@ const NETask = (function () {
 
   // ---------------------------------------------------------------------------
   // Public: returns the full NE task as a jsPsych timeline
-  // variantConfig — object from the variant file containing comparison_levels,
-  //                 standard_level, repetitions, single_exposure, n_trials,
-  //                 and optionally stimuli_list.
   // ---------------------------------------------------------------------------
-  function getNodes(jsPsych, variantConfig) {
+  function getNodes(jsPsych) {
     _jsPsych = jsPsych;
 
-    const trialList = _buildTrialList(variantConfig);
-    const allImages = _getAllImagePaths(variantConfig);
+    const trialList = _buildTrialList();
+    const allImages = _getAllImagePaths();
     const timeline  = [];
 
     // Node 1: Preload all images
@@ -607,9 +601,10 @@ const NETask = (function () {
   // Public: emotional salience rating block (post-task)
   // Shows each image without noise, participant rates emotional arousal 1–7.
   // ---------------------------------------------------------------------------
-  function getSalienceRatingNodes(jsPsych, postTaskConfig) {
-    const cfg = postTaskConfig || CONFIG.salience_rating;
-    if (!cfg || !cfg.enabled) return [];
+  function getSalienceRatingNodes(jsPsych) {
+    if (!CONFIG.salience_rating.enabled) return [];
+
+    const cfg = CONFIG.salience_rating;
     const nodes = [];
 
     // Instruction — button advance (no keyboard)
@@ -626,7 +621,7 @@ const NETask = (function () {
     });
 
     // One slider trial per image (no noise)
-    const stimList = [...(cfg.stimuli_list || CONFIG.stimuli.list)];
+    const stimList = [...CONFIG.stimuli.list];
     for (let i = stimList.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [stimList[i], stimList[j]] = [stimList[j], stimList[i]];

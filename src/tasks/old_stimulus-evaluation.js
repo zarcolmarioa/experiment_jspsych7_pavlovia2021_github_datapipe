@@ -24,11 +24,11 @@ var StimulusEvaluation = (function () {
     return html;
   }
 
-  function getNodes(jsPsych, evalConfig) {
-    var cfg = evalConfig || CONFIG.stimulus_evaluation;
-    if (!cfg || !cfg.enabled) return [];
+  function getNodes(jsPsych) {
+    if (!CONFIG.stimulus_evaluation || !CONFIG.stimulus_evaluation.enabled) return [];
 
     var nodes = [];
+    var cfg = CONFIG.stimulus_evaluation;
     var imgW = CONFIG.display.image_width_px;
     var imgH = CONFIG.display.image_height_px;
 
@@ -45,7 +45,7 @@ var StimulusEvaluation = (function () {
     });
 
     // --- Build shuffled stimulus list ---
-    var stimList = (cfg.stimuli_list || CONFIG.stimuli.list).slice();
+    var stimList = CONFIG.stimuli.list.slice();
     for (var i = stimList.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
       var tmp = stimList[i];
