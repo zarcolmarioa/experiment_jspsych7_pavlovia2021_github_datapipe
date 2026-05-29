@@ -15,43 +15,34 @@ const CONFIG = {
   // Stored in every data row so exported CSVs are self-documenting.
   // ---------------------------------------------------------------------------
   experiment: {
-    name:        "NE_Task_ToddReplication",
-    version:     "0.2.0",
-    task_variant: "sparse_noise",   // Options: "original_ne" | "sparse_noise" |
-                                    //  "grayscale" | "single_exposure" |
-                                    //  "emotional_salience_control"
-    language:    "en",              // "en" = English, "ja" = Japanese
+    name:    "NE_Task_ToddReplication",
+    version: "0.2.0",
+    language: "en",   // "en" = English, "ja" = Japanese
   },
 
   // ---------------------------------------------------------------------------
   // PLATFORM SETTINGS
   //
-  // Exactly one of the three modes below should be true at any time:
-  //
-  //   local  (online: false, github: false)
-  //     Run the experiment by opening index.html directly in a browser.
-  //     Data are downloaded as a CSV file at the end of the experiment.
-  //     The Pavlovia scripts in index.html must be commented out.
-  //
-  //   github  (online: false, github: true)
-  //     Host the experiment on GitHub Pages and save data via DataPipe to OSF.
-  //     The Pavlovia scripts in index.html must be commented out.
-  //
-  //   pavlovia  (online: true, github: false)
-  //     Deploy the experiment on Pavlovia.
-  //     The Pavlovia scripts in index.html must be uncommented.
-  //
   // ---------------------------------------------------------------------------
-  platform: {
-    online: false,   // true = Pavlovia mode
-    github: true,    // true = GitHub Pages + DataPipe mode
+  // DEPLOYMENT FLAGS
+  //   platform:       'local'    — CSV download at end (local development)
+  //                   'github'   — DataPipe → OSF save (GitHub Pages testing)
+  //                   'pavlovia' — Pavlovia init/finish nodes (production)
+  //   dev_menu:       true  — show variant selector before experiment starts
+  //                   false — run active_variant directly (participants/Pavlovia)
+  //   active_variant: id of the variant to run when dev_menu is false.
+  //                   Must match an id in src/variants/variant-registry.js.
+  // ---------------------------------------------------------------------------
+  platform:       'github',
+  dev_menu:       true,
+  active_variant: 'original_ne',
 
-    // DataPipe settings (used when github: true).
-    // experiment_id: the ID shown in your experiment dashboard at
-    //   https://pipe.jspsych.org — copy it exactly.
-    // Data are saved to the OSF folder you configured in DataPipe
-    //   (your folder is: data_calibration_phase).
-    datapipe_experiment_id: "19tHuDezXIOo" // "YOUR_DATAPIPE_EXPERIMENT_ID",
+  // DataPipe settings (used when platform === 'github').
+  // id: the experiment ID from your DataPipe dashboard at pipe.jspsych.org.
+  // osf_folder: the OSF folder name configured in your DataPipe project.
+  datapipe: {
+    id:         "19tHuDezXIOo", // 'YOUR_DATAPIPE_EXPERIMENT_ID',
+    osf_folder: 'data_calibration_phase',
   },
 
   // ---------------------------------------------------------------------------
@@ -276,50 +267,6 @@ const CONFIG = {
   },
 
   // ---------------------------------------------------------------------------
-  // TASK VARIANT OVERRIDES
-  // When task_variant is set above, these overrides are applied automatically
-  // by main.js. You do not need to edit this section manually — it is a lookup
-  // table used by the code.
-  // ---------------------------------------------------------------------------
-  _variant_overrides: {
-    original_ne: {
-      "response.type":               "text",
-      "noise.comparison_levels":     ["35", "45", "55"],
-      "noise.standard_level":        "45",
-      "stimuli.repetitions":         3,
-      "stimuli.single_exposure":     false,
-    },
-    sparse_noise: {
-      "response.type":               "text",
-      "noise.comparison_levels":     ["10", "15", "20"],
-      "noise.standard_level":        "15",
-      "stimuli.repetitions":         1,
-      "stimuli.single_exposure":     false,
-    },
-    grayscale: {
-      "response.type":               "text",
-      "noise.comparison_levels":     ["10", "15", "20"],
-      "noise.standard_level":        "15",
-      "stimuli.repetitions":         1,
-      "stimuli.single_exposure":     false,
-    },
-    single_exposure: {
-      "response.type":               "text",
-      "noise.comparison_levels":     ["10", "15", "20"],
-      "noise.standard_level":        "15",
-      "stimuli.repetitions":         1,
-      "stimuli.single_exposure":     false,
-    },
-    emotional_salience_control: {
-      "response.type":               "text",
-      "noise.comparison_levels":     ["10", "20"],
-      "noise.standard_level":        "15",
-      "stimuli.repetitions":         1,
-      "stimuli.single_exposure":     false,
-    },
-  },
-
-  // ---------------------------------------------------------------------------
   // INSTRUCTIONS TEXT
   // Edit the strings here to change what participants read.
   // HTML is allowed inside these strings.
@@ -436,7 +383,7 @@ const CONFIG = {
   questionnaires: {
     enabled: false,    // Master switch: false = skip all questionnaires
     names: [
-      { id: "cds", enabled: false },    // Cambridge Depersonalization Scale
+      { id: "cds", enabled: true },    // Cambridge Depersonalization Scale
       // Add more here, e.g.:
       // { id: "phq9", enabled: true },
     ],
@@ -450,20 +397,3 @@ const CONFIG = {
 // It reads CONFIG.experiment.task_variant and applies the matching overrides
 // from CONFIG._variant_overrides, using dot-notation paths.
 // =============================================================================
-(function applyVariantOverrides() {
-  const variant = CONFIG.experiment.task_variant;
-  const overrides = CONFIG._variant_overrides[variant];
-  if (!overrides) {
-    console.warn(`[CONFIG] Unknown task_variant "${variant}". No overrides applied.`);
-    return;
-  }
-  for (const [path, value] of Object.entries(overrides)) {
-    const keys = path.split(".");
-    let obj = CONFIG;
-    for (let i = 0; i < keys.length - 1; i++) {
-      obj = obj[keys[i]];
-    }
-    obj[keys[keys.length - 1]] = value;
-  }
-  console.log(`[CONFIG] Variant "${variant}" applied.`);
-})();

@@ -51,6 +51,28 @@
     <script src="src/calibration/contrast-screen.js"></script>
     <script src="src/calibration/color-rendering.js"></script>
 
+    <!-- Task modules (shared building blocks used by variant files) -->
+    <script src="src/tasks/stimulus-evaluation.js"></script>
+    <script src="src/tasks/ne-task.js"></script>
+    <script src="src/tasks/questionnaires.js"></script>
+
+    <!-- Variant files — add one <script> tag per variant as new ones are created -->
+    <script src="src/variants/original-ne.js"></script>
+    <!-- <script src="src/variants/sparse-noise.js"></script>    -->
+    <!-- <script src="src/variants/grayscale.js"></script>       -->
+    <!-- <script src="src/variants/single-exposure.js"></script> -->
+    <!-- <script src="src/variants/salience-control.js"></script>-->
+    <!-- <script src="src/variants/part2-dr.js"></script>        -->
+
+    <!-- Variant registry (must load AFTER variant files) -->
+    <script src="src/variants/variant-registry.js"></script>
+
+    <!-- Dev menu (always loaded; only shown when CONFIG.dev_menu is true) -->
+    <script src="src/dev-menu.js"></script>
+
+    <!-- Main timeline assembler (must load last) -->
+    <script src="src/main.js"></script>
+
     <!-- Task modules -->
     <script src="src/tasks/stimulus-evaluation.js"></script>
     <script src="src/tasks/ne-task.js"></script>
