@@ -60,16 +60,71 @@ jsPsych.data.addProperties({ participant_id: _participantId });
 document.body.style.backgroundColor = CONFIG.display.background_color;
 
 // ---------------------------------------------------------------------------
-// Fullscreen exit handler (registered when calibration starts)
+// Fullscreen banner (shown if participant exits fullscreen mid-experiment)
 // ---------------------------------------------------------------------------
-var _fullscreenHandler = null;
+var _fullscreenBanner        = null;
+var _fullscreenHandlerActive = false;
+
+function _installFullscreenHandler() {
+  if (_fullscreenHandlerActive) return;
+  _fullscreenHandlerActive = true;
+  document.addEventListener('fullscreenchange',       _onFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', _onFullscreenChange);
+  document.addEventListener('mozfullscreenchange',    _onFullscreenChange);
+  document.addEventListener('MSFullscreenChange',     _onFullscreenChange);
+}
 
 function _removeFullscreenHandler() {
-  if (_fullscreenHandler) {
-    document.removeEventListener('fullscreenchange',       _fullscreenHandler);
-    document.removeEventListener('webkitfullscreenchange', _fullscreenHandler);
-    _fullscreenHandler = null;
-  }
+  document.removeEventListener('fullscreenchange',       _onFullscreenChange);
+  document.removeEventListener('webkitfullscreenchange', _onFullscreenChange);
+  document.removeEventListener('mozfullscreenchange',    _onFullscreenChange);
+  document.removeEventListener('MSFullscreenChange',     _onFullscreenChange);
+  _fullscreenHandlerActive = false;
+  _removeBanner();
+}
+
+function _onFullscreenChange() {
+  var isFullscreen =
+    document.fullscreenElement       ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement    ||
+    document.msFullscreenElement;
+  if (!isFullscreen) { _showFullscreenBanner(); }
+  else               { _removeBanner(); }
+}
+
+function _showFullscreenBanner() {
+  if (_fullscreenBanner) return;
+  _fullscreenBanner = document.createElement('div');
+  _fullscreenBanner.style.cssText =
+    'position:fixed; top:0; left:0; right:0; z-index:99999;' +
+    'background:#1a1a1a; color:#f0ede8; padding:14px 24px;' +
+    'display:flex; align-items:center; justify-content:space-between;' +
+    'gap:16px; box-shadow:0 2px 12px rgba(0,0,0,0.6);' +
+    'font-family:Georgia,serif; font-size:0.95rem;';
+  _fullscreenBanner.innerHTML =
+    '<span>You have left full-screen mode. ' +
+    'For the best results, please return to full screen.</span>' +
+    '<button id="fs-reenter-btn" ' +
+    'style="padding:8px 20px; background:#f0ede8; color:#1a1a1a;' +
+    'border:none; border-radius:3px; font-size:0.9rem;' +
+    'font-family:Georgia,serif; cursor:pointer; white-space:nowrap;">' +
+    'Return to full screen</button>';
+  document.body.appendChild(_fullscreenBanner);
+  document.getElementById('fs-reenter-btn').addEventListener('click',
+    function () {
+      var el  = document.documentElement;
+      var req = el.requestFullscreen      ||
+                el.webkitRequestFullscreen ||
+                el.mozRequestFullScreen    ||
+                el.msRequestFullscreen;
+      if (req) req.call(el);
+    }
+  );
+}
+
+function _removeBanner() {
+  if (_fullscreenBanner) { _fullscreenBanner.remove(); _fullscreenBanner = null; }
 }
 
 // ---------------------------------------------------------------------------
@@ -237,17 +292,19 @@ function _runExperiment(variantId) {
     timeline.push({
       type:            jsPsychFullscreen,
       fullscreen_mode: true,
-      message:         '<p>' + INSTRUCTIONS.fullscreen_prompt + '</p>',
-      button_label:    INSTRUCTIONS.fullscreen_button,
-      data:            { trial_type: 'fullscreen_enter' },
+      message:
+        '<div class="calibration-card">' +
+        '<h2>Full Screen Required</h2>' +
+        '<p>This study must be run in full-screen mode.</p>' +
+        '<p>Click the button below to enter full screen.<br>' +
+        '<span style="font-size:0.85rem; color:#666;">' +
+        'You can exit at any time by pressing Escape.' +
+        '</span></p>' +
+        '</div>',
+      button_label: INSTRUCTIONS.button_continue,
+      data:         { trial_type: 'fullscreen' },
+      on_finish:    function () { _installFullscreenHandler(); },
     });
-    _fullscreenHandler = function () {
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        console.warn('[Fullscreen] Exited fullscreen.');
-      }
-    };
-    document.addEventListener('fullscreenchange',       _fullscreenHandler);
-    document.addEventListener('webkitfullscreenchange', _fullscreenHandler);
   }
 
   // 3. vsync / browser check
