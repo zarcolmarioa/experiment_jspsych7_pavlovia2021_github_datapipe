@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NE Experiment — Developer Menu</title>
+  <link rel="stylesheet" href="css/experiment.css">
+
+  <!-- jsPsych core and plugins (loaded from local vendors folder) -->
+  <script src="lib/vendors/jspsych-7.1.2/jspsych.js"></script>
+  <script src="lib/vendors/jspsych-7.1.2/plugin-html-keyboard-response.js"></script>
+  <script src="lib/vendors/jspsych-7.1.2/plugin-html-button-response.js"></script>
+  <script src="lib/vendors/jspsych-7.1.2/plugin-html-slider-response.js"></script>
+  <script src="lib/vendors/jspsych-7.1.2/plugin-call-function.js"></script>
+  <script src="lib/vendors/jspsych-7.1.2/plugin-preload.js"></script>
+  <script src="lib/vendors/jspsych-7.1.2/plugin-browser-check.js"></script>
+  <script src="lib/vendors/jspsych-7.1.2/plugin-fullscreen.js"></script>
+
+  <!-- DataPipe plugin (for GitHub → OSF data saving) -->
+  <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe@0.4/dist/index.browser.min.js"></script>
+
+  <!-- Pavlovia scripts (absent on GitHub Pages — browser ignores 404 silently) -->
+  <script type="text/javascript" src="lib/vendors/jquery-2.2.0.min.js"></script>
+  <script type="text/javascript" src="jspsych-7-pavlovia-2021.12.js"></script>
+
+  <!-- Stimulus list -->
+  <script src="stimuli/stimulus_list.js"
+          onerror="console.warn('[Stimuli] stimulus_list.js not found.')"></script>
+
+  <!-- Config and instructions -->
+  <script src="config.js"></script>
+  <script src="instructions.js"></script>
+
+  <!-- Force the dev menu regardless of config.js setting -->
+  <script>
+    CONFIG.dev_menu = true;
+  </script>
+
+  <!-- Calibration modules -->
+  <script src="src/calibration/brightness-confirmation.js"></script>
+  <script src="src/calibration/device-screen.js"></script>
+  <script src="src/calibration/resize-card.js"></script>
+  <script src="src/calibration/blind-spot.js"></script>
+  <script src="src/calibration/gamma.js"></script>
+  <script src="src/calibration/contrast-screen.js"></script>
+  <script src="src/calibration/color-rendering.js"></script>
+
+  <!-- Task modules (shared building blocks) -->
+  <script src="src/tasks/stimulus-evaluation.js"></script>
+  <script src="src/tasks/ne-task.js"></script>
+  <script src="src/tasks/questionnaires.js"></script>
+
+  <!-- Variant files — add one <script> tag per variant as new ones are created -->
+  <script src="src/variants/original-ne.js"></script>
+  <!-- <script src="src/variants/sparse-noise.js"></script>   -->
+  <!-- <script src="src/variants/grayscale.js"></script>      -->
+  <!-- <script src="src/variants/single-exposure.js"></script>-->
+  <!-- <script src="src/variants/salience-control.js"></script>-->
+  <!-- <script src="src/variants/part2-dr.js"></script>       -->
+
+  <!-- Variant registry (must load AFTER variant files) -->
+  <script src="src/variants/variant-registry.js"></script>
+
+  <!-- Dev menu (must load AFTER variant-registry.js) -->
+  <script src="src/dev-menu.js"></script>
+
+  <!-- Main timeline assembler (must load last) -->
+  <script src="src/main.js"></script>
+</head>
+<body></body>
+</html>
