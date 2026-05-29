@@ -1,21 +1,22 @@
 // =============================================================================
 // src/main.js -- Timeline Assembler
 //
-// Platform modes (set in config.js):
-//   local    -- CONFIG.platform.online = false, CONFIG.platform.github = false
-//               Opens index.html directly; CSV downloaded at end.
-//   github   -- CONFIG.platform.online = false, CONFIG.platform.github = true
-//               Hosted on GitHub Pages; data saved to OSF via DataPipe.
-//   pavlovia -- CONFIG.platform.online = true,  CONFIG.platform.github = false
-//               Deployed on Pavlovia; data saved by Pavlovia.
+// Platform modes (set CONFIG.platform in config.js):
+//   'local'    — opens index.html directly; data downloaded as CSV at end
+//   'github'   — hosted on GitHub Pages; data saved to OSF via DataPipe
+//   'pavlovia' — deployed on Pavlovia; data saved by Pavlovia
+//
+// Variant selection (set CONFIG.active_variant in config.js):
+//   When CONFIG.dev_menu is true:  DevMenu shows a variant selector first.
+//   When CONFIG.dev_menu is false: CONFIG.active_variant is run directly.
 // =============================================================================
 
 // ---------------------------------------------------------------------------
-// Detect participant ID from URL parameters (Prolific, SONA, custom)
+// Participant ID — read from URL params (Prolific, SONA) or generate locally
 // ---------------------------------------------------------------------------
 var _participantId = (function () {
   var urlParams = new URLSearchParams(window.location.search);
-  var sources = ['PROLIFIC_PID', 'participant', 'id', 'workerId'];
+  var sources   = ['PROLIFIC_PID', 'participant', 'id', 'workerId'];
   for (var i = 0; i < sources.length; i++) {
     var val = urlParams.get(sources[i]);
     if (val) return val;
@@ -24,6 +25,7 @@ var _participantId = (function () {
 })();
 
 console.log('[Experiment] Participant ID: ' + _participantId);
+console.log('[Experiment] Platform: '       + CONFIG.platform);
 
 // ---------------------------------------------------------------------------
 // Initialise jsPsych
@@ -34,353 +36,278 @@ var jsPsych = initJsPsych({
     if (data.trial_type === 'ne_task') {
       console.log(
         '[Trial ' + data.trial_index + '] ' + data.image_id +
-        ' | noise: ' + data.noise_level + '%' +
+        ' | noise: '    + data.noise_level + '%' +
         ' | response: ' + data.response +
-        ' | rt: ' + data.rt + 'ms'
+        ' | rt: '       + data.rt + 'ms'
       );
     }
   },
 
   on_finish: function () {
     _removeFullscreenHandler();
-    // Local mode only: download CSV directly in the browser.
-    // GitHub and Pavlovia modes handle saving via their own timeline nodes.
-    if (!CONFIG.platform.online && !CONFIG.platform.github) {
+    // Local mode only: download CSV directly.
+    // GitHub and Pavlovia handle saving through timeline nodes.
+    if (CONFIG.platform === 'local') {
       var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-      var filename = CONFIG.experiment.name + '_' + _participantId + '_' + timestamp + '.csv';
+      var filename  = CONFIG.experiment.name + '_' + _participantId + '_' + timestamp + '.csv';
       jsPsych.data.get().localSave('csv', filename);
-      console.log('[Experiment] Data saved to: ' + filename);
+      console.log('[Experiment] Local save: ' + filename);
     }
   },
 });
 
-// Add participant ID to all data rows (once, jsPsych appends it automatically)
 jsPsych.data.addProperties({ participant_id: _participantId });
-
 document.body.style.backgroundColor = CONFIG.display.background_color;
 
 // ---------------------------------------------------------------------------
-// Create timeline
+// Fullscreen exit handler (registered when calibration starts)
 // ---------------------------------------------------------------------------
-var timeline = [];
-
-// ---------------------------------------------------------------------------
-// Pavlovia init -- first timeline node (Pavlovia mode only)
-// ---------------------------------------------------------------------------
-var pavloviaInfo;
-
-if (CONFIG.platform.online) {
-  var pavlovia_init = {
-    type: jsPsychPavlovia,
-    command: "init",
-    setPavloviaInfo: function (info) {
-      console.log(info);
-      pavloviaInfo = info;
-    }
-  };
-  timeline.push(pavlovia_init);
-}
-
-// ---------------------------------------------------------------------------
-// Fullscreen escape handler
-// ---------------------------------------------------------------------------
-var _fullscreenBanner = null;
-var _fullscreenHandlerActive = false;
-
-function _installFullscreenHandler() {
-  if (_fullscreenHandlerActive) return;
-  _fullscreenHandlerActive = true;
-  document.addEventListener('fullscreenchange',       _onFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', _onFullscreenChange);
-  document.addEventListener('mozfullscreenchange',    _onFullscreenChange);
-  document.addEventListener('MSFullscreenChange',     _onFullscreenChange);
-}
+var _fullscreenHandler = null;
 
 function _removeFullscreenHandler() {
-  document.removeEventListener('fullscreenchange',       _onFullscreenChange);
-  document.removeEventListener('webkitfullscreenchange', _onFullscreenChange);
-  document.removeEventListener('mozfullscreenchange',    _onFullscreenChange);
-  document.removeEventListener('MSFullscreenChange',     _onFullscreenChange);
-  _fullscreenHandlerActive = false;
-  _removeBanner();
-}
-
-function _onFullscreenChange() {
-  var isFullscreen =
-    document.fullscreenElement       ||
-    document.webkitFullscreenElement ||
-    document.mozFullScreenElement    ||
-    document.msFullscreenElement;
-
-  if (!isFullscreen) {
-    _showFullscreenBanner();
-  } else {
-    _removeBanner();
+  if (_fullscreenHandler) {
+    document.removeEventListener('fullscreenchange',       _fullscreenHandler);
+    document.removeEventListener('webkitfullscreenchange', _fullscreenHandler);
+    _fullscreenHandler = null;
   }
 }
 
-function _showFullscreenBanner() {
-  if (_fullscreenBanner) return;
+// ---------------------------------------------------------------------------
+// Build calibration nodes (always runs regardless of variant)
+// ---------------------------------------------------------------------------
+function _buildCalibrationTimeline() {
+  var nodes = [];
 
-  _fullscreenBanner = document.createElement('div');
-  _fullscreenBanner.id = 'fullscreen-banner';
-  _fullscreenBanner.style.cssText =
-    'position:fixed; top:0; left:0; right:0; z-index:99999;' +
-    'background:#1a1a1a; color:#f0ede8; padding:14px 24px;' +
-    'display:flex; align-items:center; justify-content:space-between;' +
-    'gap:16px; box-shadow:0 2px 12px rgba(0,0,0,0.6);' +
-    'font-family:Georgia,serif; font-size:0.95rem;';
-
-  _fullscreenBanner.innerHTML =
-    '<span>You have left full-screen mode. ' +
-    'For the best results, please return to full screen.</span>' +
-    '<button id="fs-reenter-btn" ' +
-    'style="padding:8px 20px; background:#f0ede8; color:#1a1a1a;' +
-    'border:none; border-radius:3px; font-size:0.9rem;' +
-    'font-family:Georgia,serif; cursor:pointer; white-space:nowrap;">' +
-    'Return to full screen' +
-    '</button>';
-
-  document.body.appendChild(_fullscreenBanner);
-
-  document.getElementById('fs-reenter-btn').addEventListener('click',
-    function () {
-      var el = document.documentElement;
-      var req = el.requestFullscreen      ||
-                el.webkitRequestFullscreen ||
-                el.mozRequestFullScreen    ||
-                el.msRequestFullscreen;
-      if (req) req.call(el);
-    }
-  );
-}
-
-function _removeBanner() {
-  if (_fullscreenBanner) {
-    _fullscreenBanner.remove();
-    _fullscreenBanner = null;
+  // Brightness confirmation (before any calibration steps)
+  if (CONFIG.calibration.brightness_confirmation) {
+    nodes.push.apply(nodes, BrightnessConfirmation.getNodes(jsPsych));
   }
-}
 
-// ---- 1. Fullscreen --------------------------------------------------------
-if (CONFIG.calibration.fullscreen) {
-  var fullscreen_trial = {
-    type: jsPsychFullscreen,
-    fullscreen_mode: true,
-    message:
-      '<div class="calibration-card">' +
-      '<h2>Full Screen Required</h2>' +
-      '<p>This study must be run in full-screen mode.</p>' +
-      '<p>Click the button below to enter full screen.<br>' +
-      '<span style="font-size:0.85rem; color:#666;">' +
-      'You can exit at any time by pressing Escape.' +
-      '</span></p>' +
-      '</div>',
-    button_label: INSTRUCTIONS.button_continue,
-    data: { trial_type: 'fullscreen' },
-    on_finish: function () {
-      _installFullscreenHandler();
-    },
-  };
-  timeline.push(fullscreen_trial);
-}
-
-// ---- 2. Browser check -----------------------------------------------------
-var browser_check_fn = {
-  type: jsPsychCallFunction,
-  func: function () {
-    var ua       = navigator.userAgent;
-    var isChrome = /Chrome/.test(ua) && !/Edg/.test(ua) && !/OPR/.test(ua);
-    var isEdge   = /Edg\//.test(ua);
-    window._browserRecommended = isChrome || isEdge;
-    jsPsych.data.addProperties({
-      browser_recommended: window._browserRecommended,
-      user_agent: ua,
-    });
-  },
-};
-timeline.push(browser_check_fn);
-
-var browser_warning = {
-  type: jsPsychHtmlButtonResponse,
-  stimulus: function () {
-    if (window._browserRecommended) return '<div style="display:none;"></div>';
-    return '<div class="ne-warning">' + INSTRUCTIONS.browser_warning + '</div>';
-  },
-  choices: function () {
-    return window._browserRecommended ? ['_skip_'] : [INSTRUCTIONS.button_continue];
-  },
-  button_html: '<button class="ne-continue-btn">%choice%</button>',
-  trial_duration: function () { return window._browserRecommended ? 0 : null; },
-  data: { trial_type: 'browser_warning' },
-};
-timeline.push(browser_warning);
-
-// ---- 3. Welcome -----------------------------------------------------------
-var welcome = {
-  type: jsPsychHtmlButtonResponse,
-  stimulus: '<div class="calibration-card">' + INSTRUCTIONS.welcome + '</div>',
-  choices: [INSTRUCTIONS.button_continue],
-  button_html: '<button class="ne-continue-btn">%choice%</button>',
-  data: { trial_type: 'instruction', instruction_page: 'welcome' },
-};
-timeline.push(welcome);
-
-// ---- 4. Calibration intro -------------------------------------------------
-var anyCalibration =
-  CONFIG.calibration.brightness_confirmation ||
-  CONFIG.calibration.device_screen ||
-  CONFIG.calibration.resize_card   ||
-  CONFIG.calibration.blind_spot    ||
-  CONFIG.calibration.gamma         ||
-  CONFIG.calibration.contrast_screen ||
-  CONFIG.calibration.color_rendering;
-
-if (anyCalibration) {
-  var calibration_intro = {
+  // Calibration intro
+  nodes.push({
     type: jsPsychHtmlButtonResponse,
     stimulus:
       '<div class="calibration-card">' +
-      INSTRUCTIONS.calibration_intro + '</div>',
+      INSTRUCTIONS.calibration_intro +
+      '</div>',
     choices: [INSTRUCTIONS.button_continue],
     button_html: '<button class="ne-continue-btn">%choice%</button>',
     data: { trial_type: 'instruction', instruction_page: 'calibration_intro' },
-  };
-  timeline.push(calibration_intro);
+  });
+
+  // Step 5b: Device & screen check
+  if (CONFIG.calibration.device_screen) {
+    nodes.push.apply(nodes, DeviceScreenCalibration.getNodes(jsPsych));
+  } else {
+    nodes.push({
+      type: jsPsychCallFunction,
+      func: function () {
+        jsPsych.data.addProperties({
+          screen_width_px:    window.screen.width,
+          screen_height_px:   window.screen.height,
+          window_width_px:    window.innerWidth,
+          window_height_px:   window.innerHeight,
+          device_pixel_ratio: window.devicePixelRatio || 1,
+        });
+      },
+    });
+  }
+
+  // Step 5c: Credit card resize
+  if (CONFIG.calibration.resize_card) {
+    nodes.push.apply(nodes, ResizeCardCalibration.getNodes(jsPsych));
+  }
+
+  // Step 5d: Blind spot
+  if (CONFIG.calibration.blind_spot) {
+    nodes.push.apply(nodes, BlindSpotCalibration.getNodes(jsPsych));
+  }
+
+  // Step 5e: Gamma calibration
+  if (CONFIG.calibration.gamma) {
+    nodes.push.apply(nodes, GammaCalibration.getNodes(jsPsych));
+  }
+
+  // Step 5f: Contrast screen + ambient light
+  if (CONFIG.calibration.contrast_screen) {
+    nodes.push.apply(nodes, ContrastScreenCalibration.getNodes(jsPsych));
+  }
+
+  // Step 5g: Colour rendering check
+  if (CONFIG.calibration.color_rendering) {
+    nodes.push.apply(nodes, ColorRenderingCalibration.getNodes(jsPsych));
+  }
+
+  return nodes;
 }
 
-// ---- 5a. Brightness confirmation ------------------------------------------
-if (CONFIG.calibration.brightness_confirmation) {
-  timeline.push.apply(timeline, BrightnessConfirmation.getNodes(jsPsych));
-}
+// ---------------------------------------------------------------------------
+// Build save and finish nodes (platform-dependent)
+// ---------------------------------------------------------------------------
+function _buildSaveNodes() {
+  var nodes = [];
 
-// ---- 5b. Device & screen check --------------------------------------------
-if (CONFIG.calibration.device_screen) {
-  timeline.push.apply(timeline, DeviceScreenCalibration.getNodes(jsPsych));
-} else {
-  var screen_info = {
+  // Stamp experiment metadata before saving
+  nodes.push({
     type: jsPsychCallFunction,
     func: function () {
+      _removeFullscreenHandler();
       jsPsych.data.addProperties({
-        screen_width_px:    window.screen.width,
-        screen_height_px:   window.screen.height,
-        window_width_px:    window.innerWidth,
-        window_height_px:   window.innerHeight,
-        device_pixel_ratio: window.devicePixelRatio || 1,
+        experiment_name:     CONFIG.experiment.name,
+        experiment_version:  CONFIG.experiment.version,
+        active_variant:      CONFIG.active_variant,
+        experiment_end_time: new Date().toISOString(),
+        platform:            CONFIG.platform,
       });
     },
-  };
-  timeline.push(screen_info);
-}
+  });
 
-// ---- 5b. Credit card resize -----------------------------------------------
-if (CONFIG.calibration.resize_card) {
-  timeline.push.apply(timeline, ResizeCardCalibration.getNodes(jsPsych));
-}
-
-// ---- 5c. Blind spot -------------------------------------------------------
-if (CONFIG.calibration.blind_spot) {
-  timeline.push.apply(timeline, BlindSpotCalibration.getNodes(jsPsych));
-}
-
-// ---- 5d. Gamma calibration ------------------------------------------------
-if (CONFIG.calibration.gamma) {
-  timeline.push.apply(timeline, GammaCalibration.getNodes(jsPsych));
-}
-
-// ---- 5e. Contrast screen + ambient light ----------------------------------
-if (CONFIG.calibration.contrast_screen) {
-  timeline.push.apply(timeline, ContrastScreenCalibration.getNodes(jsPsych));
-}
-
-// ---- 5f. Colour rendering check -------------------------------------------
-if (CONFIG.calibration.color_rendering) {
-  timeline.push.apply(timeline, ColorRenderingCalibration.getNodes(jsPsych));
-}
-
-// ---- 6. Stimulus evaluation (pre-experimental, separate participant group) -
-if (CONFIG.stimulus_evaluation && CONFIG.stimulus_evaluation.enabled) {
-  timeline.push.apply(timeline, StimulusEvaluation.getNodes(jsPsych));
-}
-
-// ---- 7. NE Task -----------------------------------------------------------
-if (CONFIG.ne_task.enabled) {
-  timeline.push.apply(timeline, NETask.getNodes(jsPsych));
-}
-
-// ---- 8. Emotional salience rating -----------------------------------------
-if (CONFIG.ne_task.enabled && CONFIG.salience_rating.enabled) {
-  timeline.push.apply(timeline, NETask.getSalienceRatingNodes(jsPsych));
-}
-
-// ---- 9. Questionnaires ----------------------------------------------------
-if (CONFIG.questionnaires.enabled) {
-  timeline.push.apply(timeline, Questionnaires.getNodes(jsPsych));
-}
-
-// ---- 10. End screen -------------------------------------------------------
-var end_screen = {
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus:
-    '<div class="calibration-card" style="text-align:center;">' +
-    INSTRUCTIONS.end + '</div>',
-  choices: 'NO_KEYS',
-  trial_duration: 4000,
-  data: { trial_type: 'end_screen' },
-};
-timeline.push(end_screen);
-
-// ---- 11. Stamp experiment-level properties --------------------------------
-var stamp_properties = {
-  type: jsPsychCallFunction,
-  func: function () {
-    _removeFullscreenHandler();
-    jsPsych.data.addProperties({
-      experiment_name:     CONFIG.experiment.name,
-      experiment_version:  CONFIG.experiment.version,
-      task_variant:        CONFIG.experiment.task_variant,
-      experiment_end_time: new Date().toISOString(),
+  if (CONFIG.platform === 'github') {
+    // DataPipe → OSF
+    var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    var datapipeFilename = _participantId + '_' + timestamp + '.csv';
+    nodes.push({
+      type:          jsPsychPipe,
+      action:        'save',
+      experiment_id: CONFIG.datapipe.id,
+      filename:      datapipeFilename,
+      data_string:   function () { return jsPsych.data.get().csv(); },
+      on_finish: function (data) {
+        console.log('[DataPipe] Save attempted. Success: ' + data.success);
+      },
     });
-  },
-};
-timeline.push(stamp_properties);
 
-// ---- 12. GitHub + DataPipe save -- (GitHub Pages mode only) ---------------
-if (CONFIG.platform.github) {
-  var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  var datapipe_filename = _participantId + '_' + timestamp + '.csv';
+  } else if (CONFIG.platform === 'pavlovia') {
+    // Pavlovia finish node
+    nodes.push({
+      type:    jsPsychPavlovia,
+      command: 'finish',
+      dataFilter: function (data) {
+        console.log(jsPsych.data.get().json());
+        return data;
+      },
+      completedCallback: function () {
+        console.log('[Pavlovia] Data submitted successfully.');
+      },
+    });
+  }
+  // 'local' mode: on_finish above handles the CSV download — no timeline node needed.
 
-  var save_data = {
-    type: jsPsychPipe,
-    action: 'save',
-    experiment_id: CONFIG.platform.datapipe_experiment_id,
-    filename: datapipe_filename,
-    data_string: function () { return jsPsych.data.get().csv(); },
-    on_finish: function (data) {
-      console.log('[DataPipe] Save attempted. Success: ' + data.success);
-    },
-  };
-  timeline.push(save_data);
+  return nodes;
 }
 
-// ---- 13. Pavlovia finish -- last timeline node (Pavlovia mode only) -------
-if (CONFIG.platform.online) {
-  var pavlovia_finish = {
-    type: jsPsychPavlovia,
-    command: "finish",
-    dataFilter: function(data) {
-      console.log(data);
-      console.log(jsPsych.data.get().json());
-      return data;
-    },
-    completedCallback: function() {
-      console.log('Data successfully submitted to Pavlovia!');
+// ---------------------------------------------------------------------------
+// Find a variant by id from the registry
+// ---------------------------------------------------------------------------
+function _findVariant(variantId) {
+  for (var i = 0; i < VARIANT_REGISTRY.length; i++) {
+    if (VARIANT_REGISTRY[i].id === variantId) {
+      return VARIANT_REGISTRY[i];
     }
-  };
-  timeline.push(pavlovia_finish);
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
-// Start the experiment
+// Build and run the full experiment timeline for a given variant id
 // ---------------------------------------------------------------------------
-jsPsych.run(timeline);
+function _runExperiment(variantId) {
+  var timeline = [];
+
+  console.log('[Experiment] Running variant: ' + variantId);
+
+  // Record which variant was actually launched
+  jsPsych.data.addProperties({ active_variant: variantId });
+
+  // 1. Pavlovia init node (must be first — Pavlovia mode only)
+  if (CONFIG.platform === 'pavlovia') {
+    var pavloviaInfo;
+    timeline.push({
+      type: jsPsychPavlovia,
+      command: 'init',
+      setPavloviaInfo: function (info) {
+        pavloviaInfo = info;
+        console.log('[Pavlovia] Initialised:', info);
+      },
+    });
+  }
+
+  // 2. Fullscreen
+  if (CONFIG.calibration.fullscreen) {
+    timeline.push({
+      type:            jsPsychFullscreen,
+      fullscreen_mode: true,
+      message:         '<p>' + INSTRUCTIONS.fullscreen_prompt + '</p>',
+      button_label:    INSTRUCTIONS.fullscreen_button,
+      data:            { trial_type: 'fullscreen_enter' },
+    });
+    _fullscreenHandler = function () {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        console.warn('[Fullscreen] Exited fullscreen.');
+      }
+    };
+    document.addEventListener('fullscreenchange',       _fullscreenHandler);
+    document.addEventListener('webkitfullscreenchange', _fullscreenHandler);
+  }
+
+  // 3. vsync / browser check
+  timeline.push({
+    type:             jsPsychBrowserCheck,
+    inclusion_function: function (data) { return true; },
+    exclusion_message:  function (data) { return ''; },
+    on_finish: function (data) {
+      window._browserRecommended =
+        (data.browser === 'chrome' || data.browser === 'edge');
+      jsPsych.data.addProperties({ vsync_rate_hz: data.vsync_rate || null });
+    },
+    data: { trial_type: 'browser_check' },
+  });
+
+  // 4. Welcome screen
+  timeline.push({
+    type:        jsPsychHtmlButtonResponse,
+    stimulus:    '<div class="calibration-card">' + INSTRUCTIONS.welcome + '</div>',
+    choices:     [INSTRUCTIONS.button_continue],
+    button_html: '<button class="ne-continue-btn">%choice%</button>',
+    data:        { trial_type: 'instruction', instruction_page: 'welcome' },
+  });
+
+  // 5. Calibration battery
+  timeline.push.apply(timeline, _buildCalibrationTimeline());
+
+  // 6. Variant task timeline
+  var entry = _findVariant(variantId);
+  if (entry && entry.module && typeof entry.module.getTimeline === 'function') {
+    timeline.push.apply(timeline, entry.module.getTimeline(jsPsych));
+  } else {
+    console.error('[Experiment] Variant not found or invalid: ' + variantId);
+  }
+
+  // 7. End screen
+  timeline.push({
+    type:           jsPsychHtmlKeyboardResponse,
+    stimulus:
+      '<div class="calibration-card" style="text-align:center;">' +
+      INSTRUCTIONS.end + '</div>',
+    choices:        'NO_KEYS',
+    trial_duration: 4000,
+    data:           { trial_type: 'end_screen' },
+  });
+
+  // 8. Save / finish nodes
+  timeline.push.apply(timeline, _buildSaveNodes());
+
+  // Run
+  jsPsych.run(timeline);
+}
+
+// ---------------------------------------------------------------------------
+// Entry point — show dev menu or run directly
+// ---------------------------------------------------------------------------
+if (CONFIG.dev_menu) {
+  DevMenu.show(function (selectedVariantId) {
+    _runExperiment(selectedVariantId);
+  });
+} else {
+  _runExperiment(CONFIG.active_variant);
+}
