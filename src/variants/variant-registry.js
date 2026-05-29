@@ -13,6 +13,15 @@
 const VARIANT_REGISTRY = [
 
   {
+    id:                 'calibration_only',
+    label:              'Calibration battery only',
+    description:        'Runs the full calibration battery and ends. ' +
+                         'Use this to test timing, instructions, and screen checks.',
+    estimated_minutes:  10,
+    module:             CalibrationOnlyVariant,
+  },
+
+  {
     id:                 'original_ne',
     label:              'Original NE task',
     description:        'Replication of Todd et al. (2012) Experiment 1. ' +
